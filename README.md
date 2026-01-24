@@ -2,6 +2,8 @@
 
 A Node.js application with React frontend that receives content via webhook and streams it live to connected clients via WebSocket. Also includes a GraphQL client for querying and managing content in Strapi CMS.
 
+**Live Demo**: [https://demohead.vercel.app/](https://demohead.vercel.app/)
+
 ## Features
 
 - 🎣 **Webhook Endpoint**: Receive content via HTTP POST requests
