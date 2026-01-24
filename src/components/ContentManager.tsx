@@ -26,7 +26,7 @@ export default function ContentManager() {
     title: '',
     body: '',
     articleId: '',
-    language: 'EN',
+    language: 'eng',
     uri: '',
     sourceUri: '',
     imageUri: '',
@@ -41,7 +41,7 @@ export default function ContentManager() {
     onCompleted: () => {
       refetchArticles();
       setSelectedTab('articles');
-      setFormData({ title: '', body: '', articleId: '', language: 'EN', uri: '', sourceUri: '', imageUri: '' });
+      setFormData({ title: '', body: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
     },
   });
 
@@ -49,7 +49,7 @@ export default function ContentManager() {
     onCompleted: () => {
       refetchArticles();
       setSelectedArticle(null);
-      setFormData({ title: '', body: '', articleId: '', language: 'EN', uri: '', sourceUri: '', imageUri: '' });
+      setFormData({ title: '', body: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
     },
   });
 
@@ -126,7 +126,7 @@ export default function ContentManager() {
           onClick={() => {
             setSelectedTab('articles');
             setSelectedArticle(null);
-            setFormData({ title: '', body: '', articleId: '', language: 'EN', uri: '', sourceUri: '', imageUri: '' });
+            setFormData({ title: '', body: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
           }}
         >
           Articles ({articles.length})
@@ -137,7 +137,7 @@ export default function ContentManager() {
             setSelectedTab('create');
             setSelectedArticle(null);
             if (!selectedArticle) {
-              setFormData({ title: '', body: '', articleId: '', language: 'EN', uri: '', sourceUri: '', imageUri: '' });
+              setFormData({ title: '', body: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
             }
           }}
         >
@@ -233,9 +233,9 @@ export default function ContentManager() {
                 value={formData.language}
                 onChange={(e) => setFormData({ ...formData, language: e.target.value })}
               >
-                <option value="EN">English</option>
-                <option value="ES">Spanish</option>
-                <option value="FR">French</option>
+                <option value="eng">English</option>
+                <option value="spa">Spanish</option>
+                <option value="fra">French</option>
               </select>
             </div>
             <div className="form-group">
@@ -275,7 +275,7 @@ export default function ContentManager() {
             {selectedArticle && (
               <button onClick={() => {
                 setSelectedArticle(null);
-                setFormData({ title: '', body: '', articleId: '', language: 'EN', uri: '', sourceUri: '', imageUri: '' });
+                setFormData({ title: '', body: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
               }}>
                 Cancel
               </button>
