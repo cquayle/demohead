@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import { AppBar, Toolbar, Typography, Tabs, Tab, Box, Badge } from '@mui/material';
 import ContentManager from './components/ContentManager';
+import Newsfeed from './components/Newsfeed';
+import ArticleDetail from './components/ArticleDetail';
+import { Article } from './components/types';
 import './App.css';
 
 interface ContentMessage {
@@ -8,8 +12,11 @@ interface ContentMessage {
   timestamp: string;
 }
 
+type ViewType = 'webhook' | 'cms' | 'newsfeed';
+
 function App() {
-  const [activeView, setActiveView] = useState<'webhook' | 'cms'>('webhook');
+  const [activeView, setActiveView] = useState<ViewType>('newsfeed');
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState<ContentMessage[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<string>('Disconnected');
@@ -77,69 +84,108 @@ function App() {
     return new Date(timestamp).toLocaleTimeString();
   };
 
+  const handleArticleClick = (article: Article) => {
+    setSelectedArticle(article);
+  };
+
+  const handleBackToNewsfeed = () => {
+    setSelectedArticle(null);
+  };
+
+  // If an article is selected, show the detail view
+  if (selectedArticle) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <AppBar position="static">
+          <Toolbar>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              Demo CMS Head
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <ArticleDetail article={selectedArticle} onBack={handleBackToNewsfeed} />
+      </Box>
+    );
+  }
+
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>Demo CMS Head</h1>
-        <nav className="main-nav">
-          <button
-            className={activeView === 'webhook' ? 'active' : ''}
-            onClick={() => setActiveView('webhook')}
-          >
-            Webhook Receiver
-          </button>
-          <button
-            className={activeView === 'cms' ? 'active' : ''}
-            onClick={() => setActiveView('cms')}
-          >
-            Content Manager
-          </button>
-        </nav>
-        {activeView === 'webhook' && (
-          <div className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}>
-            <span className="status-dot"></span>
-            <span className="status-text">{connectionStatus}</span>
-          </div>
-        )}
-      </header>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column' }}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Demo CMS Head
+          </Typography>
+          {activeView === 'webhook' && (
+            <Badge
+              color={isConnected ? 'success' : 'error'}
+              variant="dot"
+              sx={{ mr: 2 }}
+            >
+              <Typography variant="body2">{connectionStatus}</Typography>
+            </Badge>
+          )}
+        </Toolbar>
+        <Tabs
+          value={activeView}
+          onChange={(_, newValue) => {
+            setActiveView(newValue);
+            setSelectedArticle(null);
+          }}
+          sx={{ borderBottom: 1, borderColor: 'divider' }}
+        >
+          <Tab label="Newsfeed" value="newsfeed" />
+          <Tab label="Content Manager" value="cms" />
+          <Tab
+            label={
+              <Badge badgeContent={messages.length} color="secondary">
+                Webhook Receiver
+              </Badge>
+            }
+            value="webhook"
+          />
+        </Tabs>
+      </AppBar>
 
-      <main className="app-main">
-        {activeView === 'webhook' && (
-          <div className="messages-container">
-            {messages.length === 0 ? (
-              <div className="empty-state">
-                <p>Waiting for content...</p>
-                <p className="hint">Send content to the webhook endpoint to see it here</p>
-              </div>
-            ) : (
-              messages.map((message, index) => (
-                <div key={index} className="message-card">
-                  <div className="message-header">
-                    <span className="message-type">{message.type}</span>
-                    <span className="message-timestamp">
-                      {formatTimestamp(message.timestamp)}
-                    </span>
-                  </div>
-                  <div className="message-content">
-                    <pre>{JSON.stringify(message.data, null, 2)}</pre>
-                  </div>
-                </div>
-              ))
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        )}
-
+      <Box component="main" sx={{ flexGrow: 1 }}>
+        {activeView === 'newsfeed' && <Newsfeed onArticleClick={handleArticleClick} />}
         {activeView === 'cms' && <ContentManager />}
-      </main>
-
-      {activeView === 'webhook' && (
-        <footer className="app-footer">
-          <p>Webhook endpoint: <code>POST http://localhost:3001/api/webhook</code></p>
-          <p>WebSocket endpoint: <code>ws://localhost:3001/ws</code></p>
-        </footer>
-      )}
-    </div>
+        {activeView === 'webhook' && (
+          <Box sx={{ p: 3 }}>
+            <Box className="messages-container">
+              {messages.length === 0 ? (
+                <Box className="empty-state" sx={{ textAlign: 'center', p: 4 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Waiting for content...
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Send content to the webhook endpoint to see it here
+                  </Typography>
+                </Box>
+              ) : (
+                messages.map((message, index) => (
+                  <Box key={index} className="message-card" sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                    <Box className="message-header" sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="caption" color="primary" sx={{ textTransform: 'uppercase' }}>
+                        {message.type}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {formatTimestamp(message.timestamp)}
+                      </Typography>
+                    </Box>
+                    <Box className="message-content" sx={{ bgcolor: 'grey.100', p: 2, borderRadius: 1, overflow: 'auto' }}>
+                      <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                        {JSON.stringify(message.data, null, 2)}
+                      </pre>
+                    </Box>
+                  </Box>
+                ))
+              )}
+              <div ref={messagesEndRef} />
+            </Box>
+          </Box>
+        )}
+      </Box>
+    </Box>
   );
 }
 
