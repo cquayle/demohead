@@ -1,5 +1,7 @@
 import { Box, Container, Typography, Paper, Chip, Avatar, Divider, Button, CardMedia } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Article } from './types';
 
 interface ArticleDetailProps {
@@ -84,18 +86,91 @@ export default function ArticleDetail({ article, onBack }: ArticleDetailProps) {
           <Divider sx={{ my: 3 }} />
 
           {article.body && (
-            <Typography
-              variant="body1"
+            <Box
               sx={{
-                lineHeight: 1.8,
-                fontSize: '1.1rem',
-                whiteSpace: 'pre-wrap',
-                mb: 3,
-              }}
-            >
-              {article.body}
-            </Typography>
-          )}
+                '& p': {
+                  mb: 2,
+                  lineHeight: 1.8,
+                },
+                '& h1, & h2, & h3, & h4, & h5, & h6': {
+                  mt: 3,
+                  mb: 2,
+                  fontWeight: 600,
+                },
+                '& h1': { fontSize: '2rem' },
+                '& h2': { fontSize: '1.75rem' },
+                '& h3': { fontSize: '1.5rem' },
+                '& ul, & ol': {
+                  mb: 2,
+                  pl: 3,
+                },
+                '& li': {
+                  mb: 1,
+                },
+                '& code': {
+                  bgcolor: 'grey.100',
+                  px: 0.5,
+              py: 0.25,
+              borderRadius: 0.5,
+              fontFamily: 'monospace',
+              fontSize: '0.9em',
+            },
+            '& pre': {
+              bgcolor: 'grey.100',
+              p: 2,
+              borderRadius: 1,
+              overflow: 'auto',
+              mb: 2,
+              '& code': {
+                bgcolor: 'transparent',
+                p: 0,
+              },
+            },
+            '& blockquote': {
+              borderLeft: 3,
+              borderColor: 'primary.main',
+              pl: 2,
+              ml: 0,
+              fontStyle: 'italic',
+              color: 'text.secondary',
+              mb: 2,
+            },
+            '& a': {
+              color: 'primary.main',
+              textDecoration: 'none',
+              '&:hover': {
+                textDecoration: 'underline',
+              },
+            },
+            '& img': {
+              maxWidth: '100%',
+              height: 'auto',
+              borderRadius: 1,
+              mb: 2,
+            },
+            '& table': {
+              width: '100%',
+              borderCollapse: 'collapse',
+              mb: 2,
+            },
+            '& th, & td': {
+              border: 1,
+              borderColor: 'divider',
+              px: 2,
+              py: 1,
+            },
+            '& th': {
+              bgcolor: 'grey.100',
+              fontWeight: 600,
+            },
+            mb: 3,
+          }}
+        >
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {article.body}
+          </ReactMarkdown>
+        </Box>
+      )}
 
           {article.sourceUri && (
             <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider' }}>
