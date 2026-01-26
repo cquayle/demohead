@@ -20,8 +20,8 @@ export const CREATE_ARTICLE = gql`
 
 // Mutation to update an article
 export const UPDATE_ARTICLE = gql`
-  mutation UpdateArticle($documentId: ID!, $data: ArticleInput!) {
-    updateArticle(documentId: $documentId, data: $data) {
+  mutation UpdateArticle($id: ID!, $data: ArticleInput!) {
+    updateArticle(id: $id, data: $data) {
       documentId
       articleId
       title
@@ -39,8 +39,8 @@ export const UPDATE_ARTICLE = gql`
 
 // Mutation to delete an article
 export const DELETE_ARTICLE = gql`
-  mutation DeleteArticle($documentId: ID!) {
-    deleteArticle(documentId: $documentId) {
+  mutation DeleteArticle($id: ID!) {
+    deleteArticle(id: $id) {
       documentId
     }
   }
