@@ -87,7 +87,7 @@ export default function ContentManager() {
     try {
       await updateArticle({
         variables: {
-          id: selectedArticle.documentId,
+          documentId: selectedArticle.documentId,
           data: formData,
         },
       });
@@ -101,7 +101,7 @@ export default function ContentManager() {
     if (!window.confirm('Are you sure you want to delete this article?')) return;
     try {
       await deleteArticle({
-        variables: { id: documentId },
+        variables: { documentId },
       });
     } catch (error) {
       console.error('Error deleting article:', error);

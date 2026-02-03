@@ -33,8 +33,8 @@ export const GET_ARTICLES = gql`
 
 // Query to get a single article by ID
 export const GET_ARTICLE = gql`
-  query GetArticle($id: ID!) {
-    article(id: $id) {
+  query GetArticle($documentId: ID!) {
+    article(documentId: $documentId) {
       documentId
       articleId
       title
