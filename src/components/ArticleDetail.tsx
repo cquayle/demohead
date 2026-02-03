@@ -1,6 +1,11 @@
-import { Box, Container, Typography, Paper, Chip, Avatar, Divider, Button, CardMedia } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Box, Container, Typography, Paper, Chip, Avatar, Divider, Button, CardMedia, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { ArrowBack, TextFields, Code, Html } from '@mui/icons-material';
 import { Article } from './types';
+
+export type BodyFormat = 'plain' | 'markdown' | 'html';
 
 interface ArticleDetailProps {
   article: Article;
@@ -8,6 +13,12 @@ interface ArticleDetailProps {
 }
 
 export default function ArticleDetail({ article, onBack }: ArticleDetailProps) {
+  const [bodyFormat, setBodyFormat] = useState<BodyFormat>('plain');
+
+  const handleFormatChange = (_: React.MouseEvent<HTMLElement>, newFormat: BodyFormat | null) => {
+    if (newFormat !== null) setBodyFormat(newFormat);
+  };
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Button
@@ -84,17 +95,67 @@ export default function ArticleDetail({ article, onBack }: ArticleDetailProps) {
           <Divider sx={{ my: 3 }} />
 
           {article.body && (
-            <Typography
-              variant="body1"
-              sx={{
-                lineHeight: 1.8,
-                fontSize: '1.1rem',
-                whiteSpace: 'pre-wrap',
-                mb: 3,
-              }}
-            >
-              {article.body}
-            </Typography>
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Render body as:
+                </Typography>
+                <ToggleButtonGroup
+                  value={bodyFormat}
+                  exclusive
+                  onChange={handleFormatChange}
+                  size="small"
+                  aria-label="body render format"
+                >
+                  <ToggleButton value="plain" aria-label="plain text">
+                    <TextFields sx={{ mr: 0.5 }} fontSize="small" />
+                    Plain text
+                  </ToggleButton>
+                  <ToggleButton value="markdown" aria-label="markdown">
+                    <Code sx={{ mr: 0.5 }} fontSize="small" />
+                    Markdown
+                  </ToggleButton>
+                  <ToggleButton value="html" aria-label="html">
+                    <Html sx={{ mr: 0.5 }} fontSize="small" />
+                    HTML
+                  </ToggleButton>
+                </ToggleButtonGroup>
+                <Typography variant="caption" color="text.secondary" sx={{ width: '100%' }}>
+                  Only articles with body content in the selected format will render correctly.
+                </Typography>
+              </Box>
+              <Box
+                className="article-body"
+                sx={{
+                  lineHeight: 1.8,
+                  fontSize: '1.1rem',
+                  mb: 3,
+                  '& .article-body-plain': { whiteSpace: 'pre-wrap' },
+                  '& .article-body-markdown p': { mb: 1.5 },
+                  '& .article-body-markdown ul, & .article-body-markdown ol': { pl: 3, mb: 1.5 },
+                  '& .article-body-markdown h1': { fontSize: '1.5rem', mt: 2, mb: 1 },
+                  '& .article-body-markdown h2': { fontSize: '1.25rem', mt: 1.5, mb: 0.75 },
+                  '& .article-body-html a': { color: 'primary.main' },
+                }}
+              >
+                {bodyFormat === 'plain' && (
+                  <Typography variant="body1" className="article-body-plain" component="div">
+                    {article.body}
+                  </Typography>
+                )}
+                {bodyFormat === 'markdown' && (
+                  <Box className="article-body-markdown">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.body}</ReactMarkdown>
+                  </Box>
+                )}
+                {bodyFormat === 'html' && (
+                  <Box
+                    className="article-body-html"
+                    dangerouslySetInnerHTML={{ __html: article.body }}
+                  />
+                )}
+              </Box>
+            </Box>
           )}
 
           {article.sourceUri && (
