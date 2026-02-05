@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Box, Container, Typography, Paper, Chip, Avatar, Divider, Button, CardMedia, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Box, Container, Typography, Paper, Chip, Divider, Button, CardMedia, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import { ArrowBack, TextFields, Code, Html } from '@mui/icons-material';
 import { Article } from './types';
+import { fullArticleToText } from '../utils/blocks';
 
 export type BodyFormat = 'plain' | 'markdown' | 'html';
 
@@ -14,6 +15,7 @@ interface ArticleDetailProps {
 
 export default function ArticleDetail({ article, onBack }: ArticleDetailProps) {
   const [bodyFormat, setBodyFormat] = useState<BodyFormat>('plain');
+  const bodyContent = fullArticleToText(article.fullArticle);
 
   const handleFormatChange = (_: React.MouseEvent<HTMLElement>, newFormat: BodyFormat | null) => {
     if (newFormat !== null) setBodyFormat(newFormat);
@@ -50,21 +52,13 @@ export default function ArticleDetail({ article, onBack }: ArticleDetailProps) {
           </Typography>
 
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-            {article.categories && article.categories.map((category, index) => (
-              <Chip
-                key={index}
-                label={category.uri || 'Category'}
-                color="primary"
-                variant="outlined"
-              />
-            ))}
             <Chip
               label={article.language.toUpperCase()}
               variant="outlined"
             />
-            {article.datetime && (
+            {article.datetimePub && (
               <Chip
-                label={new Date(article.datetime).toLocaleDateString('en-US', {
+                label={new Date(article.datetimePub).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
@@ -74,27 +68,15 @@ export default function ArticleDetail({ article, onBack }: ArticleDetailProps) {
             )}
           </Box>
 
-          {article.authors && article.authors.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-              <Avatar sx={{ width: 40, height: 40 }}>
-                {article.authors[0].givenName?.[0] || article.authors[0].authorId[0]}
-              </Avatar>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {[article.authors[0].givenName, article.authors[0].familyName].filter(Boolean).join(' ') || article.authors[0].authorId}
-                </Typography>
-                {article.authors.length > 1 && (
-                  <Typography variant="caption" color="text.secondary">
-                    and {article.authors.length - 1} other{article.authors.length > 2 ? 's' : ''}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
+          {article.summary && (
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
+              {article.summary}
+            </Typography>
           )}
 
           <Divider sx={{ my: 3 }} />
 
-          {article.body && (
+          {bodyContent && (
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 2 }}>
                 <Typography variant="subtitle2" color="text.secondary">
@@ -140,18 +122,18 @@ export default function ArticleDetail({ article, onBack }: ArticleDetailProps) {
               >
                 {bodyFormat === 'plain' && (
                   <Typography variant="body1" className="article-body-plain" component="div">
-                    {article.body}
+                    {bodyContent}
                   </Typography>
                 )}
                 {bodyFormat === 'markdown' && (
                   <Box className="article-body-markdown">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.body}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{bodyContent}</ReactMarkdown>
                   </Box>
                 )}
                 {bodyFormat === 'html' && (
                   <Box
                     className="article-body-html"
-                    dangerouslySetInnerHTML={{ __html: article.body }}
+                    dangerouslySetInnerHTML={{ __html: bodyContent }}
                   />
                 )}
               </Box>

@@ -7,26 +7,16 @@ export const GET_ARTICLES = gql`
       documentId
       articleId
       title
-      body
-      datetime
+      summary
       datetimePub
       uri
       sourceUri
       imageUri
       language
+      fullArticle
       createdAt
       updatedAt
       publishedAt
-      categories {
-        documentId
-        uri
-      }
-      authors {
-        documentId
-        authorId
-        givenName
-        familyName
-      }
     }
   }
 `;
@@ -38,34 +28,16 @@ export const GET_ARTICLE = gql`
       documentId
       articleId
       title
-      body
-      datetime
+      summary
       datetimePub
       uri
       sourceUri
       imageUri
       language
+      fullArticle
       createdAt
       updatedAt
       publishedAt
-      categories {
-        documentId
-        uri
-      }
-      authors {
-        documentId
-        authorId
-        givenName
-        familyName
-      }
-      concepts {
-        documentId
-        uri
-      }
-      places {
-        documentId
-        name
-      }
     }
   }
 `;

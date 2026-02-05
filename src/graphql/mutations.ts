@@ -7,8 +7,7 @@ export const CREATE_ARTICLE = gql`
       documentId
       articleId
       title
-      body
-      datetime
+      summary
       datetimePub
       uri
       sourceUri
@@ -25,8 +24,7 @@ export const UPDATE_ARTICLE = gql`
       documentId
       articleId
       title
-      body
-      datetime
+      summary
       datetimePub
       uri
       sourceUri

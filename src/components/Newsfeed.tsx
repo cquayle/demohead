@@ -10,10 +10,10 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  Avatar,
   CardActionArea,
 } from '@mui/material';
 import { Article } from './types';
+import { fullArticleToText } from '../utils/blocks';
 
 interface NewsfeedProps {
   onArticleClick: (article: Article) => void;
@@ -91,7 +91,7 @@ export default function Newsfeed({ onArticleClick }: NewsfeedProps) {
                   <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
                     {article.title || 'Untitled Article'}
                   </Typography>
-                  {article.body && (
+                  {(article.summary || fullArticleToText(article.fullArticle)) && (
                     <Typography
                       variant="body2"
                       color="text.secondary"
@@ -104,39 +104,21 @@ export default function Newsfeed({ onArticleClick }: NewsfeedProps) {
                         overflow: 'hidden',
                       }}
                     >
-                      {article.body}
+                      {article.summary || fullArticleToText(article.fullArticle)}
                     </Typography>
                   )}
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 'auto' }}>
-                    {article.categories && article.categories.length > 0 && (
-                      <Chip
-                        label={article.categories[0].uri || 'Category'}
-                        size="small"
-                        color="primary"
-                        variant="outlined"
-                      />
-                    )}
                     <Chip
                       label={article.language.toUpperCase()}
                       size="small"
                       variant="outlined"
                     />
-                    {article.datetime && (
+                    {article.datetimePub && (
                       <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto', alignSelf: 'center' }}>
-                        {new Date(article.datetime).toLocaleDateString()}
+                        {new Date(article.datetimePub).toLocaleDateString()}
                       </Typography>
                     )}
                   </Box>
-                  {article.authors && article.authors.length > 0 && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                      <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
-                        {article.authors[0].givenName?.[0] || article.authors[0].authorId[0]}
-                      </Avatar>
-                      <Typography variant="caption" color="text.secondary">
-                        {[article.authors[0].givenName, article.authors[0].familyName].filter(Boolean).join(' ') || article.authors[0].authorId}
-                      </Typography>
-                    </Box>
-                  )}
                 </CardContent>
               </CardActionArea>
             </Card>

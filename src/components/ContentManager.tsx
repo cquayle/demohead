@@ -15,7 +15,6 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  Avatar,
   IconButton,
   MenuItem,
   Select,
@@ -27,6 +26,7 @@ import { Edit, Delete } from '@mui/icons-material';
 import { GET_ARTICLES } from '../graphql/queries';
 import { CREATE_ARTICLE, UPDATE_ARTICLE, DELETE_ARTICLE } from '../graphql/mutations';
 import { Article } from './types';
+import { fullArticleToText, textToFullArticle } from '../utils/blocks';
 
 export default function ContentManager() {
   const [selectedTab, setSelectedTab] = useState<'articles' | 'create'>('articles');
@@ -34,6 +34,7 @@ export default function ContentManager() {
   const [formData, setFormData] = useState({
     title: '',
     body: '',
+    summary: '',
     articleId: '',
     language: 'eng',
     uri: '',
@@ -48,7 +49,7 @@ export default function ContentManager() {
       refetchArticles();
       setSelectedTab('articles');
       setSelectedArticle(null);
-      setFormData({ title: '', body: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
+      setFormData({ title: '', body: '', summary: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
     },
   });
 
@@ -56,7 +57,7 @@ export default function ContentManager() {
     onCompleted: () => {
       refetchArticles();
       setSelectedArticle(null);
-      setFormData({ title: '', body: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
+      setFormData({ title: '', body: '', summary: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
     },
   });
 
@@ -68,11 +69,13 @@ export default function ContentManager() {
 
   const handleCreate = async () => {
     try {
+      const { body, ...rest } = formData;
       await createArticle({
         variables: {
           data: {
-            ...formData,
-            datetime: new Date().toISOString(),
+            ...rest,
+            fullArticle: textToFullArticle(body),
+            datetimePub: new Date().toISOString(),
           },
         },
       });
@@ -85,10 +88,14 @@ export default function ContentManager() {
   const handleUpdate = async () => {
     if (!selectedArticle) return;
     try {
+      const { body, ...rest } = formData;
       await updateArticle({
         variables: {
           documentId: selectedArticle.documentId,
-          data: formData,
+          data: {
+            ...rest,
+            fullArticle: textToFullArticle(body),
+          },
         },
       });
     } catch (error) {
@@ -113,7 +120,8 @@ export default function ContentManager() {
     setSelectedArticle(article);
     setFormData({
       title: article.title || '',
-      body: article.body || '',
+      body: fullArticleToText(article.fullArticle),
+      summary: article.summary || '',
       articleId: article.articleId,
       language: article.language,
       uri: article.uri || '',
@@ -132,7 +140,7 @@ export default function ContentManager() {
           setSelectedTab(newValue);
           if (newValue === 'articles') {
             setSelectedArticle(null);
-            setFormData({ title: '', body: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
+            setFormData({ title: '', body: '', summary: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
           }
         }}>
           <Tab label={`Articles (${articles.length})`} value="articles" />
@@ -181,15 +189,15 @@ export default function ContentManager() {
                     <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
                       <Chip label={`ID: ${article.articleId}`} size="small" variant="outlined" />
                       <Chip label={article.language.toUpperCase()} size="small" variant="outlined" />
-                      {article.datetime && (
+                      {article.datetimePub && (
                         <Chip
-                          label={new Date(article.datetime).toLocaleDateString()}
+                          label={new Date(article.datetimePub).toLocaleDateString()}
                           size="small"
                           variant="outlined"
                         />
                       )}
                     </Box>
-                    {article.body && (
+                    {(article.summary || fullArticleToText(article.fullArticle)) && (
                       <Typography
                         variant="body2"
                         color="text.secondary"
@@ -201,32 +209,8 @@ export default function ContentManager() {
                           overflow: 'hidden',
                         }}
                       >
-                        {article.body}
+                        {article.summary || fullArticleToText(article.fullArticle)}
                       </Typography>
-                    )}
-                    {article.categories && article.categories.length > 0 && (
-                      <Box sx={{ mb: 1 }}>
-                        {article.categories.map((c, idx) => (
-                          <Chip
-                            key={idx}
-                            label={c.uri || c.documentId}
-                            size="small"
-                            color="primary"
-                            variant="outlined"
-                            sx={{ mr: 0.5, mb: 0.5 }}
-                          />
-                        ))}
-                      </Box>
-                    )}
-                    {article.authors && article.authors.length > 0 && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                        <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
-                          {article.authors[0].givenName?.[0] || article.authors[0].authorId[0]}
-                        </Avatar>
-                        <Typography variant="caption" color="text.secondary">
-                          {[article.authors[0].givenName, article.authors[0].familyName].filter(Boolean).join(' ') || article.authors[0].authorId}
-                        </Typography>
-                      </Box>
                     )}
                   </CardContent>
                   <CardActions>
@@ -275,9 +259,16 @@ export default function ContentManager() {
             />
             <TextField
               fullWidth
+              label="Summary"
+              value={formData.summary}
+              onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
+              placeholder="Short summary or teaser"
+            />
+            <TextField
+              fullWidth
               multiline
               rows={10}
-              label="Body"
+              label="Body (full article)"
               value={formData.body}
               onChange={(e) => setFormData({ ...formData, body: e.target.value })}
               placeholder="Article content"
@@ -336,7 +327,7 @@ export default function ContentManager() {
                   variant="outlined"
                   onClick={() => {
                     setSelectedArticle(null);
-                    setFormData({ title: '', body: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
+                    setFormData({ title: '', body: '', summary: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
                   }}
                 >
                   Cancel
