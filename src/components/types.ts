@@ -1,6 +1,6 @@
 /**
  * GraphQL / API types aligned with democms Article schema.
- * Article has: articleId, language, datetimePub, uri, title, sourceUri, imageUri, summary, fullStory (plain text).
+ * Article has: articleId, lang, datetimePub, uri, title, sourceUri, imageUri, summary, fullStory (plain text).
  */
 
 export interface Article {
@@ -12,7 +12,7 @@ export interface Article {
   uri?: string;
   sourceUri?: string;
   imageUri?: string;
-  language: string;
+  lang?: string;
   fullStory?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -28,6 +28,6 @@ export interface ArticleInput {
   uri?: string;
   sourceUri?: string;
   imageUri?: string;
-  language: string;
+  lang?: string;
   fullStory?: string;
 }

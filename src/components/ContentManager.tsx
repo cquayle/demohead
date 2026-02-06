@@ -32,7 +32,7 @@ const initialForm = {
   body: '',
   summary: '',
   articleId: '',
-  language: 'eng',
+  lang: 'eng',
   uri: '',
   sourceUri: '',
   imageUri: '',
@@ -112,7 +112,7 @@ export default function ContentManager() {
       body: article.fullStory || '',
       summary: article.summary || '',
       articleId: article.articleId,
-      language: article.language,
+      lang: article.lang || '',
       uri: article.uri || '',
       sourceUri: article.sourceUri || '',
       imageUri: article.imageUri || '',
@@ -178,7 +178,7 @@ export default function ContentManager() {
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
                       <Chip label={`ID: ${article.articleId}`} size="small" variant="outlined" />
-                      <Chip label={article.language.toUpperCase()} size="small" variant="outlined" />
+                      <Chip label={(article.lang || '').toUpperCase()} size="small" variant="outlined" />
                       {article.datetimePub && (
                         <Chip label={new Date(article.datetimePub).toLocaleDateString()} size="small" variant="outlined" />
                       )}
@@ -254,7 +254,7 @@ export default function ContentManager() {
             <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
               <FormControl sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                 <InputLabel>Language</InputLabel>
-                <Select value={formData.language} label="Language" onChange={(e) => setFormData({ ...formData, language: e.target.value })}>
+                <Select value={formData.lang} label="Language" onChange={(e) => setFormData({ ...formData, lang: e.target.value })}>
                   <MenuItem value="eng">English</MenuItem>
                   <MenuItem value="spa">Spanish</MenuItem>
                   <MenuItem value="fra">French</MenuItem>

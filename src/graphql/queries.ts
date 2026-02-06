@@ -12,7 +12,7 @@ export const GET_ARTICLES = gql`
       uri
       sourceUri
       imageUri
-      language
+      lang
       fullStory
       createdAt
       updatedAt
@@ -33,7 +33,7 @@ export const GET_ARTICLE = gql`
       uri
       sourceUri
       imageUri
-      language
+      lang
       fullStory
       createdAt
       updatedAt

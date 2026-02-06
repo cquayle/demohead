@@ -107,7 +107,7 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
                     </Typography>
                   )}
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 'auto' }}>
-                    <Chip label={article.language.toUpperCase()} size="small" variant="outlined" />
+                    <Chip label={(article.lang || '').toUpperCase()} size="small" variant="outlined" />
                     {article.datetimePub && (
                       <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto', alignSelf: 'center' }}>
                         {new Date(article.datetimePub).toLocaleDateString()}

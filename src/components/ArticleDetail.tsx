@@ -32,7 +32,7 @@ export default function ArticleDetail({ article, onBack }: ArticleDetailProps) {
           </Typography>
 
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-            <Chip label={article.language.toUpperCase()} variant="outlined" />
+            <Chip label={(article.lang || '').toUpperCase()} variant="outlined" />
             {article.datetimePub && (
               <Chip
                 label={new Date(article.datetimePub).toLocaleDateString('en-US', {
@@ -65,17 +65,17 @@ export default function ArticleDetail({ article, onBack }: ArticleDetailProps) {
 
           {article.sourceUri && (
             <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider' }}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>Source</Typography>
-              <Button href={article.sourceUri} target="_blank" rel="noopener noreferrer" variant="outlined" size="small">
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom></Typography>
+              <Button href={article.uri || ''} target="_blank" rel="noopener noreferrer" variant="outlined" size="small">
                 View Original Article
               </Button>
             </Box>
           )}
 
-          {article.uri && (
+          {article.sourceUri && (
             <Box sx={{ mt: 2 }}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>URI</Typography>
-              <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>{article.uri}</Typography>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>Source: </Typography>
+              <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>{article.sourceUri}</Typography>
             </Box>
           )}
         </Box>
