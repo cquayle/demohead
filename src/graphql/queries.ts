@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-// Query to get all articles
+// Query to get all articles (matches democms Article schema)
 export const GET_ARTICLES = gql`
   query GetArticles {
     articles {
@@ -13,7 +13,7 @@ export const GET_ARTICLES = gql`
       sourceUri
       imageUri
       language
-      fullArticle
+      fullStory
       createdAt
       updatedAt
       publishedAt
@@ -21,7 +21,7 @@ export const GET_ARTICLES = gql`
   }
 `;
 
-// Query to get a single article by ID
+// Query to get a single article by documentId
 export const GET_ARTICLE = gql`
   query GetArticle($documentId: ID!) {
     article(documentId: $documentId) {
@@ -34,32 +34,10 @@ export const GET_ARTICLE = gql`
       sourceUri
       imageUri
       language
-      fullArticle
+      fullStory
       createdAt
       updatedAt
       publishedAt
-    }
-  }
-`;
-
-// Query to get all categories
-export const GET_CATEGORIES = gql`
-  query GetCategories {
-    categories {
-      documentId
-      uri
-    }
-  }
-`;
-
-// Query to get all authors
-export const GET_AUTHORS = gql`
-  query GetAuthors {
-    authors {
-      documentId
-      authorId
-      givenName
-      familyName
     }
   }
 `;

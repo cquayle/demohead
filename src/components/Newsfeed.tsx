@@ -13,18 +13,23 @@ import {
   CardActionArea,
 } from '@mui/material';
 import { Article } from './types';
-import { fullArticleToText } from '../utils/blocks';
 
 interface NewsfeedProps {
   onArticleClick: (article: Article) => void;
+  liveArticles?: Article[];
 }
 
-export default function Newsfeed({ onArticleClick }: NewsfeedProps) {
+export default function Newsfeed({ onArticleClick, liveArticles = [] }: NewsfeedProps) {
   const { data: articlesData, loading, error } = useQuery<{ articles: Article[] }>(GET_ARTICLES);
 
-  const articles: Article[] = (articlesData?.articles as Article[]) || [];
+  const apiArticles: Article[] = (articlesData?.articles as Article[]) || [];
+  const liveIds = new Set(liveArticles.map((a) => a.articleId));
+  const articles: Article[] = [
+    ...liveArticles,
+    ...apiArticles.filter((a) => !liveIds.has(a.articleId)),
+  ];
 
-  if (loading) {
+  if (loading && articles.length === 0) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
         <CircularProgress />
@@ -32,7 +37,7 @@ export default function Newsfeed({ onArticleClick }: NewsfeedProps) {
     );
   }
 
-  if (error) {
+  if (error && articles.length === 0) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Alert severity="error">
@@ -67,10 +72,7 @@ export default function Newsfeed({ onArticleClick }: NewsfeedProps) {
                 display: 'flex',
                 flexDirection: 'column',
                 transition: 'transform 0.2s, box-shadow 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: 4,
-                },
+                '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 },
               }}
             >
               <CardActionArea onClick={() => onArticleClick(article)} sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
@@ -79,19 +81,16 @@ export default function Newsfeed({ onArticleClick }: NewsfeedProps) {
                     component="img"
                     height="200"
                     image={article.imageUri}
-                    alt={article.title || 'Article image'}
+                    alt={article.title || 'Article'}
                     sx={{ objectFit: 'cover' }}
-                    onError={(e) => {
-                      // Hide image if it fails to load
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
                 )}
                 <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                   <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
                     {article.title || 'Untitled Article'}
                   </Typography>
-                  {(article.summary || fullArticleToText(article.fullArticle)) && (
+                  {(article.summary || article.fullStory) && (
                     <Typography
                       variant="body2"
                       color="text.secondary"
@@ -104,15 +103,11 @@ export default function Newsfeed({ onArticleClick }: NewsfeedProps) {
                         overflow: 'hidden',
                       }}
                     >
-                      {article.summary || fullArticleToText(article.fullArticle)}
+                      {article.summary || article.fullStory}
                     </Typography>
                   )}
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 'auto' }}>
-                    <Chip
-                      label={article.language.toUpperCase()}
-                      size="small"
-                      variant="outlined"
-                    />
+                    <Chip label={article.language.toUpperCase()} size="small" variant="outlined" />
                     {article.datetimePub && (
                       <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto', alignSelf: 'center' }}>
                         {new Date(article.datetimePub).toLocaleDateString()}

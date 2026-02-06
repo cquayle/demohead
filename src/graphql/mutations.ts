@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-// Mutation to create an article
+// Mutation to create an article (ArticleInput matches democms schema)
 export const CREATE_ARTICLE = gql`
   mutation CreateArticle($data: ArticleInput!) {
     createArticle(data: $data) {
@@ -13,6 +13,9 @@ export const CREATE_ARTICLE = gql`
       sourceUri
       imageUri
       language
+      fullStory
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -30,6 +33,7 @@ export const UPDATE_ARTICLE = gql`
       sourceUri
       imageUri
       language
+      fullStory
       updatedAt
     }
   }
@@ -40,26 +44,6 @@ export const DELETE_ARTICLE = gql`
   mutation DeleteArticle($documentId: ID!) {
     deleteArticle(documentId: $documentId) {
       documentId
-    }
-  }
-`;
-
-// Mutation to create a category
-export const CREATE_CATEGORY = gql`
-  mutation CreateCategory($data: CategoryInput!) {
-    createCategory(data: $data) {
-      documentId
-      name
-    }
-  }
-`;
-
-// Mutation to create an author
-export const CREATE_AUTHOR = gql`
-  mutation CreateAuthor($data: AuthorInput!) {
-    createAuthor(data: $data) {
-      documentId
-      name
     }
   }
 `;

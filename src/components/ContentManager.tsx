@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import {
   Box,
+  Button,
   Container,
   Tabs,
   Tab,
@@ -10,7 +11,6 @@ import {
   CardActions,
   CardMedia,
   Typography,
-  Button,
   TextField,
   CircularProgress,
   Alert,
@@ -26,46 +26,40 @@ import { Edit, Delete } from '@mui/icons-material';
 import { GET_ARTICLES } from '../graphql/queries';
 import { CREATE_ARTICLE, UPDATE_ARTICLE, DELETE_ARTICLE } from '../graphql/mutations';
 import { Article } from './types';
-import { fullArticleToText, textToFullArticle } from '../utils/blocks';
+
+const initialForm = {
+  title: '',
+  body: '',
+  summary: '',
+  articleId: '',
+  language: 'eng',
+  uri: '',
+  sourceUri: '',
+  imageUri: '',
+};
 
 export default function ContentManager() {
   const [selectedTab, setSelectedTab] = useState<'articles' | 'create'>('articles');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    body: '',
-    summary: '',
-    articleId: '',
-    language: 'eng',
-    uri: '',
-    sourceUri: '',
-    imageUri: '',
-  });
+  const [formData, setFormData] = useState(initialForm);
 
   const { data: articlesData, loading: articlesLoading, error: articlesError, refetch: refetchArticles } = useQuery<{ articles: Article[] }>(GET_ARTICLES);
-
   const [createArticle, { loading: creating }] = useMutation(CREATE_ARTICLE, {
     onCompleted: () => {
       refetchArticles();
       setSelectedTab('articles');
       setSelectedArticle(null);
-      setFormData({ title: '', body: '', summary: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
+      setFormData(initialForm);
     },
   });
-
   const [updateArticle] = useMutation(UPDATE_ARTICLE, {
     onCompleted: () => {
       refetchArticles();
       setSelectedArticle(null);
-      setFormData({ title: '', body: '', summary: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
+      setFormData(initialForm);
     },
   });
-
-  const [deleteArticle] = useMutation(DELETE_ARTICLE, {
-    onCompleted: () => {
-      refetchArticles();
-    },
-  });
+  const [deleteArticle] = useMutation(DELETE_ARTICLE, { onCompleted: () => refetchArticles() });
 
   const handleCreate = async () => {
     try {
@@ -74,7 +68,7 @@ export default function ContentManager() {
         variables: {
           data: {
             ...rest,
-            fullArticle: textToFullArticle(body),
+            fullStory: body || undefined,
             datetimePub: new Date().toISOString(),
           },
         },
@@ -92,10 +86,7 @@ export default function ContentManager() {
       await updateArticle({
         variables: {
           documentId: selectedArticle.documentId,
-          data: {
-            ...rest,
-            fullArticle: textToFullArticle(body),
-          },
+          data: { ...rest, fullStory: body || undefined },
         },
       });
     } catch (error) {
@@ -107,9 +98,7 @@ export default function ContentManager() {
   const handleDelete = async (documentId: string) => {
     if (!window.confirm('Are you sure you want to delete this article?')) return;
     try {
-      await deleteArticle({
-        variables: { documentId },
-      });
+      await deleteArticle({ variables: { documentId } });
     } catch (error) {
       console.error('Error deleting article:', error);
       alert('Failed to delete article. Check console for details.');
@@ -120,7 +109,7 @@ export default function ContentManager() {
     setSelectedArticle(article);
     setFormData({
       title: article.title || '',
-      body: fullArticleToText(article.fullArticle),
+      body: article.fullStory || '',
       summary: article.summary || '',
       articleId: article.articleId,
       language: article.language,
@@ -136,13 +125,16 @@ export default function ContentManager() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={selectedTab} onChange={(_, newValue) => {
-          setSelectedTab(newValue);
-          if (newValue === 'articles') {
-            setSelectedArticle(null);
-            setFormData({ title: '', body: '', summary: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
-          }
-        }}>
+        <Tabs
+          value={selectedTab}
+          onChange={(_, newValue) => {
+            setSelectedTab(newValue);
+            if (newValue === 'articles') {
+              setSelectedArticle(null);
+              setFormData(initialForm);
+            }
+          }}
+        >
           <Tab label={`Articles (${articles.length})`} value="articles" />
           <Tab label={selectedArticle ? 'Edit Article' : 'Create Article'} value="create" />
         </Tabs>
@@ -177,9 +169,7 @@ export default function ContentManager() {
                       image={article.imageUri}
                       alt={article.title || 'Article'}
                       sx={{ objectFit: 'cover' }}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
                   )}
                   <CardContent sx={{ flexGrow: 1 }}>
@@ -190,14 +180,10 @@ export default function ContentManager() {
                       <Chip label={`ID: ${article.articleId}`} size="small" variant="outlined" />
                       <Chip label={article.language.toUpperCase()} size="small" variant="outlined" />
                       {article.datetimePub && (
-                        <Chip
-                          label={new Date(article.datetimePub).toLocaleDateString()}
-                          size="small"
-                          variant="outlined"
-                        />
+                        <Chip label={new Date(article.datetimePub).toLocaleDateString()} size="small" variant="outlined" />
                       )}
                     </Box>
-                    {(article.summary || fullArticleToText(article.fullArticle)) && (
+                    {(article.summary || article.fullStory) && (
                       <Typography
                         variant="body2"
                         color="text.secondary"
@@ -209,23 +195,15 @@ export default function ContentManager() {
                           overflow: 'hidden',
                         }}
                       >
-                        {article.summary || fullArticleToText(article.fullArticle)}
+                        {article.summary || article.fullStory}
                       </Typography>
                     )}
                   </CardContent>
                   <CardActions>
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleEdit(article)}
-                      size="small"
-                    >
+                    <IconButton color="primary" onClick={() => handleEdit(article)} size="small">
                       <Edit />
                     </IconButton>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDelete(article.documentId)}
-                      size="small"
-                    >
+                    <IconButton color="error" onClick={() => handleDelete(article.documentId)} size="small">
                       <Delete />
                     </IconButton>
                   </CardActions>
@@ -268,19 +246,15 @@ export default function ContentManager() {
               fullWidth
               multiline
               rows={10}
-              label="Body (full article)"
+              label="Body (full story)"
               value={formData.body}
               onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-              placeholder="Article content"
+              placeholder="Full story (plain text)"
             />
             <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
               <FormControl sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                 <InputLabel>Language</InputLabel>
-                <Select
-                  value={formData.language}
-                  label="Language"
-                  onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                >
+                <Select value={formData.language} label="Language" onChange={(e) => setFormData({ ...formData, language: e.target.value })}>
                   <MenuItem value="eng">English</MenuItem>
                   <MenuItem value="spa">Spanish</MenuItem>
                   <MenuItem value="fra">French</MenuItem>
@@ -323,13 +297,7 @@ export default function ContentManager() {
                 {creating ? 'Saving...' : selectedArticle ? 'Update Article' : 'Create Article'}
               </Button>
               {selectedArticle && (
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    setSelectedArticle(null);
-                    setFormData({ title: '', body: '', summary: '', articleId: '', language: 'eng', uri: '', sourceUri: '', imageUri: '' });
-                  }}
-                >
+                <Button variant="outlined" onClick={() => { setSelectedArticle(null); setFormData(initialForm); }}>
                   Cancel
                 </Button>
               )}
