@@ -13,8 +13,16 @@ import {
   Alert,
   Chip,
   CardActionArea,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
+import { Shuffle } from '@mui/icons-material';
 import { Article } from './types';
+
+function pickRandomHero(articles: Article[]): Article | null {
+  if (articles.length === 0) return null;
+  return articles[Math.floor(Math.random() * articles.length)] ?? null;
+}
 
 const PAGE_SIZE = 10;
 
@@ -34,6 +42,7 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
   const [apiArticles, setApiArticles] = useState<Article[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [heroArticle, setHeroArticle] = useState<Article | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const { data, loading, error } = useQuery<{
@@ -60,12 +69,39 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
     fetchMoreQuery({ variables: { page: page + 1, pageSize: PAGE_SIZE } }).then((result) => {
       const conn = result.data?.articles_connection;
       if (conn) {
-        setApiArticles((prev) => [...prev, ...conn.nodes]);
+        setApiArticles((prev) => {
+          const next = [...prev, ...conn.nodes];
+          return next;
+        });
         setHasMore(conn.pageInfo.page < conn.pageInfo.pageCount);
         setPage(conn.pageInfo.page);
       }
     });
   }, [hasMore, loadingMore, page, fetchMoreQuery]);
+
+  const liveIds = new Set(liveArticles.map((a) => a.articleId));
+  const allArticles: Article[] = [
+    ...liveArticles,
+    ...apiArticles.filter((a) => !liveIds.has(a.articleId)),
+  ];
+
+  // After each load (initial or load more), pick a random hero
+  useEffect(() => {
+    if (allArticles.length > 0) {
+      setHeroArticle(pickRandomHero(allArticles));
+    }
+  }, [allArticles.length]);
+
+  const hero = heroArticle && allArticles.some((a) => a.documentId === heroArticle.documentId)
+    ? heroArticle
+    : allArticles[0] ?? null;
+  const gridArticles = hero ? allArticles.filter((a) => a.documentId !== hero.documentId) : allArticles;
+
+  const shuffleHero = useCallback(() => {
+    if (allArticles.length > 0) {
+      setHeroArticle(pickRandomHero(allArticles));
+    }
+  }, [allArticles]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -79,14 +115,6 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
     observer.observe(el);
     return () => observer.disconnect();
   }, [loadMore]);
-
-  const liveIds = new Set(liveArticles.map((a) => a.articleId));
-  const allArticles: Article[] = [
-    ...liveArticles,
-    ...apiArticles.filter((a) => !liveIds.has(a.articleId)),
-  ];
-  const hero = allArticles[0];
-  const gridArticles = allArticles.slice(1);
 
   if (loading && allArticles.length === 0) {
     return (
@@ -183,11 +211,19 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4, fontWeight: 600 }}>
-        Newsfeed
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, mb: 4 }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
+          Newsfeed
+        </Typography>
+        <Tooltip title="Pick a random article as the hero (for demo)">
+          <IconButton onClick={shuffleHero} color="primary" size="large" aria-label="Shuffle hero article">
+            <Shuffle />
+          </IconButton>
+        </Tooltip>
+      </Box>
 
-      {/* Hero: first article */}
+      {/* Hero: random article (changes after each load; use Shuffle to switch) */}
+      {hero && (
       <Box sx={{ mb: 4 }}>
         <Box
           key={hero.documentId}
@@ -247,6 +283,7 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
           </CardActionArea>
         </Box>
       </Box>
+      )}
 
       {/* Grid: rest of articles */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
