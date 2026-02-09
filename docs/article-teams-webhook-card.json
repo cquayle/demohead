@@ -1,0 +1,85 @@
+{
+  "$schema": {
+    "type": "object",
+    "properties": {
+      "type": {
+        "type": "string"
+      },
+      "attachments": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "contentType": {
+              "type": "string"
+            },
+            "content": {
+              "type": "object",
+              "properties": {
+                "$schema": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "contentType",
+            "content"
+          ]
+        }
+      }
+    }
+  },
+  "attachments": [
+    {
+      "type": "AdaptiveCard",
+      "$schema": "https://adaptivecards.io/schemas/adaptive-card.json",
+      "version": "1.6",
+      "body": [
+        {
+          "type": "Image",
+          "url": "${$root.imageUri}"
+        },
+        {
+          "type": "TextBlock",
+          "text": "${$root.title}",
+          "wrap": true,
+          "style": "heading"
+        },
+        {
+          "type": "TextBlock",
+          "text": "${$root.summary}",
+          "wrap": true
+        }
+      ],
+      "speak": "${$root.title}",
+      "actions": [
+        {
+          "type": "Action.OpenUrl",
+          "title": "View Article",
+          "url": "{{root.uri}}"
+        }
+      ]
+    }
+  ]
+}

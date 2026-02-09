@@ -1,0 +1,40 @@
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.4",
+    "body": [
+      {
+        "type": "TextBlock",
+        "text": "{{title}}",
+        "weight": "bolder",
+        "size": "large",
+        "wrap": true
+      },
+      {
+        "type": "TextBlock",
+        "text": "{{summary}}",
+        "wrap": true
+      },
+      {
+        "type": "Image",
+        "url": "{{imageUri}}",
+        "altText": "Article image",
+        "size": "large"
+      },
+      {
+        "type": "FactSet",
+        "facts": [
+          { "title": "Article ID", "value": "{{articleId}}" },
+          { "title": "Language", "value": "{{lang}}" },
+          { "title": "Published", "value": "{{datetimePub}}" }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "type": "Action.OpenUrl",
+        "title": "View article",
+        "url": "{{uri}}"
+      }
+    ]
+  }
