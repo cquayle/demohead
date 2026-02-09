@@ -5,14 +5,18 @@ import { Article } from './types';
 interface ArticleDetailProps {
   article: Article;
   onBack: () => void;
+  /** When true, hide the back button (e.g. in Content Manager preview). */
+  hideBackButton?: boolean;
 }
 
-export default function ArticleDetail({ article, onBack }: ArticleDetailProps) {
+export default function ArticleDetail({ article, onBack, hideBackButton }: ArticleDetailProps) {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Button startIcon={<ArrowBack />} onClick={onBack} sx={{ mb: 3 }}>
-        Back to Newsfeed
-      </Button>
+      {!hideBackButton && (
+        <Button startIcon={<ArrowBack />} onClick={onBack} sx={{ mb: 3 }}>
+          Back to Newsfeed
+        </Button>
+      )}
 
       <Paper elevation={2} sx={{ overflow: 'hidden' }}>
         {article.imageUri && (

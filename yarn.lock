@@ -1356,6 +1356,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"adaptivecards@npm:^3.0.5":
+  version: 3.0.5
+  resolution: "adaptivecards@npm:3.0.5"
+  peerDependencies:
+    swiper: ^11.0.7
+  checksum: 10c0/3d70c7c382fe3069b06949e712dfde773a64acf153ad3d97008558b797d6ffe08500b944557311704f4e646ac88a8f17cd893e0700cd38098f8d4ba88a19e79c
+  languageName: node
+  linkType: hard
+
 "agent-base@npm:^7.1.0, agent-base@npm:^7.1.2":
   version: 7.1.4
   resolution: "agent-base@npm:7.1.4"
@@ -1731,6 +1740,7 @@ __metadata:
     "@types/react-dom": "npm:^19.2.3"
     "@types/ws": "npm:^8.18.1"
     "@vitejs/plugin-react": "npm:^5.1.2"
+    adaptivecards: "npm:^3.0.5"
     concurrently: "npm:^9.2.1"
     cors: "npm:^2.8.6"
     dotenv: "npm:^17.2.3"
@@ -1740,6 +1750,7 @@ __metadata:
     react-dom: "npm:^19.2.3"
     react-markdown: "npm:^10.1.0"
     remark-gfm: "npm:^4.0.1"
+    swiper: "npm:^11.0.7"
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
     vite: "npm:^7.3.1"
@@ -4100,6 +4111,13 @@ __metadata:
   version: 1.0.0
   resolution: "supports-preserve-symlinks-flag@npm:1.0.0"
   checksum: 10c0/6c4032340701a9950865f7ae8ef38578d8d7053f5e10518076e6554a9381fa91bd9c6850193695c141f32b21f979c985db07265a758867bac95de05f7d8aeb39
+  languageName: node
+  linkType: hard
+
+"swiper@npm:^11.0.7":
+  version: 11.2.10
+  resolution: "swiper@npm:11.2.10"
+  checksum: 10c0/b7e3a7c79d92ccc62af77744edc376c9aefc771a0abd50c4adf07b5e3450b5da9ca7f84f5809e275ff65e1bc9d4500d930628e84a76fc7f2db403291c69b7fac
   languageName: node
   linkType: hard
 
