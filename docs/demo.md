@@ -16,7 +16,7 @@
 **Demo CMS**
 
 - [Strapi Cloud App](https://deserving-frogs-345174c2a8.strapiapp.com/admin) and article data model 
-Demo- Strapi Cloud GraphQL, [Apollo Explorer](https://deserving-frogs-345174c2a8.strapiapp.com/graphql)
+- Demo- Strapi Cloud GraphQL - [Apollo Explorer](https://deserving-frogs-345174c2a8.strapiapp.com/graphql)
 - Updating and adding articles in Strapi [content manager]()
 
 **'Demo Head' Combined View and Manage App**

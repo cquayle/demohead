@@ -26,7 +26,7 @@ import {
 import { Edit, Delete, Send, Settings } from '@mui/icons-material';
 import { GET_ARTICLES } from '../graphql/queries';
 import { CREATE_ARTICLE, UPDATE_ARTICLE, DELETE_ARTICLE } from '../graphql/mutations';
-import { Article } from './types';
+import { Article, sortArticlesByLatestFirst } from './types';
 import ArticleCardPreview from './ArticleCardPreview';
 import ArticleDetail from './ArticleDetail';
 import AdaptiveCardPreview from './AdaptiveCardPreview';
@@ -234,7 +234,7 @@ export default function ContentManager() {
     setShowWebhookSettings(false);
   };
 
-  const articles: Article[] = (articlesData?.articles as Article[]) || [];
+  const articles: Article[] = sortArticlesByLatestFirst((articlesData?.articles as Article[]) || []);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>

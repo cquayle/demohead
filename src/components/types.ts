@@ -19,6 +19,15 @@ export interface Article {
   publishedAt?: string;
 }
 
+/** Sort articles by latest first (datetimePub, then publishedAt, then createdAt). */
+export function sortArticlesByLatestFirst(articles: Article[]): Article[] {
+  return [...articles].sort((a, b) => {
+    const dateA = a.datetimePub || a.publishedAt || a.createdAt || '';
+    const dateB = b.datetimePub || b.publishedAt || b.createdAt || '';
+    return dateB.localeCompare(dateA); // desc: newest first
+  });
+}
+
 /** Input for createArticle / updateArticle mutations (ArticleInput in schema). */
 export interface ArticleInput {
   articleId: string;

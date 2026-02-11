@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { Shuffle } from '@mui/icons-material';
-import { Article } from './types';
+import { Article, sortArticlesByLatestFirst } from './types';
 
 function pickRandomHero(articles: Article[]): Article | null {
   if (articles.length === 0) return null;
@@ -80,10 +80,10 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
   }, [hasMore, loadingMore, page, fetchMoreQuery]);
 
   const liveIds = new Set(liveArticles.map((a) => a.articleId));
-  const allArticles: Article[] = [
+  const allArticles: Article[] = sortArticlesByLatestFirst([
     ...liveArticles,
     ...apiArticles.filter((a) => !liveIds.has(a.articleId)),
-  ];
+  ]);
 
   // After each load (initial or load more), pick a random hero
   useEffect(() => {

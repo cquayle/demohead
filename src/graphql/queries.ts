@@ -1,9 +1,9 @@
 import { gql } from '@apollo/client';
 
-// Query to get all articles (matches democms Article schema)
+// Query to get all articles (matches democms Article schema), latest first
 export const GET_ARTICLES = gql`
   query GetArticles {
-    articles {
+    articles(sort: "datetimePub:desc") {
       documentId
       articleId
       title
@@ -21,10 +21,10 @@ export const GET_ARTICLES = gql`
   }
 `;
 
-// Paginated articles (Strapi 5 relay-style connection) for infinite scroll
+// Paginated articles (Strapi 5 relay-style connection) for infinite scroll, latest first
 export const GET_ARTICLES_CONNECTION = gql`
   query GetArticlesConnection($page: Int!, $pageSize: Int!) {
-    articles_connection(pagination: { page: $page, pageSize: $pageSize }) {
+    articles_connection(pagination: { page: $page, pageSize: $pageSize }, sort: "datetimePub:desc") {
       nodes {
         documentId
         articleId
