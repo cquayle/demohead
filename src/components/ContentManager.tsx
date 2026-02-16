@@ -27,8 +27,6 @@ import { Edit, Delete, Send, Settings } from '@mui/icons-material';
 import { GET_ARTICLES } from '../graphql/queries';
 import { CREATE_ARTICLE, UPDATE_ARTICLE, DELETE_ARTICLE } from '../graphql/mutations';
 import { Article, sortArticlesByLatestFirst } from './types';
-import ArticleCardPreview from './ArticleCardPreview';
-import ArticleDetail from './ArticleDetail';
 import AdaptiveCardPreview from './AdaptiveCardPreview';
 import {
   fillAdaptiveCardTemplate,
@@ -82,7 +80,6 @@ export default function ContentManager() {
   const [selectedTab, setSelectedTab] = useState<'articles' | 'create'>('articles');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [formData, setFormData] = useState(initialForm);
-  const [previewMode, setPreviewMode] = useState<'newsfeed' | 'full' | 'adaptive'>('newsfeed');
   const [webhookUrl, setWebhookUrl] = useState(getStoredWebhookUrl);
   const [cardTemplate, setCardTemplate] = useState(getStoredCardTemplate);
   const [showWebhookSettings, setShowWebhookSettings] = useState(false);
@@ -106,23 +103,6 @@ export default function ContentManager() {
     },
   });
   const [deleteArticle] = useMutation(DELETE_ARTICLE, { onCompleted: () => refetchArticles() });
-
-  /** Preview article built from current form (and existing datetime when editing). */
-  const previewArticle = useMemo((): Article => {
-    const datetimePub = selectedArticle?.datetimePub ?? new Date().toISOString();
-    return {
-      documentId: 'preview',
-      articleId: formData.articleId || 'preview-id',
-      title: formData.title || 'Untitled',
-      summary: formData.summary || '',
-      fullStory: formData.body || '',
-      datetimePub,
-      uri: formData.uri || '',
-      sourceUri: formData.sourceUri || '',
-      imageUri: formData.imageUri || '',
-      lang: formData.lang || 'eng',
-    };
-  }, [formData, selectedArticle?.datetimePub]);
 
   /** Filled adaptive card JSON for current form (for preview and send). */
   const filledCardJson = useMemo(() => {
@@ -446,48 +426,25 @@ export default function ContentManager() {
             </Box>
           </Paper>
 
-          {/* Preview pane */}
+          {/* Preview pane: adaptive card only */}
           <Paper sx={{ p: 2, flex: { xs: '1 1 auto', lg: '1 1 45%' }, minWidth: 0, maxHeight: { lg: '85vh' }, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-              Preview
+              Preview (adaptive card)
             </Typography>
-            <Tabs
-              value={previewMode}
-              onChange={(_, v) => setPreviewMode(v as 'newsfeed' | 'full' | 'adaptive')}
-              sx={{ borderBottom: 1, borderColor: 'divider', mb: 2, minHeight: 40 }}
-            >
-              <Tab label="Newsfeed card" value="newsfeed" />
-              <Tab label="Full article" value="full" />
-              <Tab label="Adaptive card" value="adaptive" />
-            </Tabs>
             <Box sx={{ flex: 1, overflow: 'auto' }}>
-              {previewMode === 'newsfeed' && (
-                <Box sx={{ width: { xs: '100%', sm: 320 }, mx: 'auto' }}>
-                  <ArticleCardPreview article={previewArticle} compact />
-                </Box>
-              )}
-              {previewMode === 'full' && (
-                <Box sx={{ maxWidth: 600 }}>
-                  <ArticleDetail article={previewArticle} onBack={() => {}} hideBackButton />
-                </Box>
-              )}
-              {previewMode === 'adaptive' && (
-                <Box>
-                  <AdaptiveCardPreview cardJson={filledCardJson} />
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
-                    JSON (with placeholders filled)
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    multiline
-                    minRows={8}
-                    maxRows={20}
-                    value={filledCardJson}
-                    InputProps={{ readOnly: true }}
-                    sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
-                  />
-                </Box>
-              )}
+              <AdaptiveCardPreview cardJson={filledCardJson} />
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
+                JSON (with placeholders filled)
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                minRows={8}
+                maxRows={20}
+                value={filledCardJson}
+                InputProps={{ readOnly: true }}
+                sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+              />
             </Box>
           </Paper>
         </Box>

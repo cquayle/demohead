@@ -5,9 +5,11 @@ import { Box, Typography } from '@mui/material';
 
 interface AdaptiveCardPreviewProps {
   cardJson: string;
+  /** When true, omit the "Rendered preview" label (e.g. when used in a list). */
+  hideLabel?: boolean;
 }
 
-export default function AdaptiveCardPreview({ cardJson }: AdaptiveCardPreviewProps) {
+export default function AdaptiveCardPreview({ cardJson, hideLabel }: AdaptiveCardPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -20,10 +22,24 @@ export default function AdaptiveCardPreview({ cardJson }: AdaptiveCardPreviewPro
     try {
       cardPayload = JSON.parse(cardJson);
     } catch {
+      el.innerHTML = '';
+      const msg = document.createElement('p');
+      msg.style.color = '#d32f2f';
+      msg.style.fontSize = '0.875rem';
+      msg.textContent = 'Card could not be displayed (invalid JSON).';
+      el.appendChild(msg);
       return;
     }
 
-    if (!cardPayload || typeof (cardPayload as any).type !== 'string') return;
+    if (!cardPayload || (cardPayload as any).type !== 'AdaptiveCard') {
+      el.innerHTML = '';
+      const msg = document.createElement('p');
+      msg.style.color = '#d32f2f';
+      msg.style.fontSize = '0.875rem';
+      msg.textContent = 'Card could not be displayed (invalid payload).';
+      el.appendChild(msg);
+      return;
+    }
 
     try {
       const card = new AdaptiveCards.AdaptiveCard();
@@ -48,9 +64,11 @@ export default function AdaptiveCardPreview({ cardJson }: AdaptiveCardPreviewPro
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-        Rendered preview
-      </Typography>
+      {!hideLabel && (
+        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          Rendered preview
+        </Typography>
+      )}
       <Box
         ref={containerRef}
         className="ac-adaptiveCard"

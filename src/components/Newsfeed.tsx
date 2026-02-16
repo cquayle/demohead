@@ -1,23 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useLazyQuery } from '@apollo/client/react';
 import { GET_ARTICLES_CONNECTION } from '../graphql/queries';
-import {
-  Box,
-  Button,
-  Container,
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  CircularProgress,
-  Alert,
-  Chip,
-  CardActionArea,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
+import { Box, Button, Container, Typography, CircularProgress, Alert, IconButton, Tooltip } from '@mui/material';
 import { Shuffle } from '@mui/icons-material';
 import { Article, sortArticlesByLatestFirst } from './types';
+import AdaptiveCardPreview from './AdaptiveCardPreview';
+import { fillAdaptiveCardTemplate, articleToArticleData, NEWSFEED_CARD_TEMPLATE } from './adaptiveCardUtils';
 
 function pickRandomHero(articles: Article[]): Article | null {
   if (articles.length === 0) return null;
@@ -145,69 +133,26 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
     );
   }
 
-  const ArticleCard = ({ article, compact = false }: { article: Article; compact?: boolean }) => (
-    <Card
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 },
-      }}
-    >
-      <CardActionArea
+  const ArticleCard = ({ article }: { article: Article }) => {
+    const cardJson = useMemo(
+      () => fillAdaptiveCardTemplate(NEWSFEED_CARD_TEMPLATE, articleToArticleData(article)),
+      [article]
+    );
+    return (
+      <Box
         onClick={() => onArticleClick(article)}
-        sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
+        sx={{
+          cursor: 'pointer',
+          transition: 'transform 0.2s, box-shadow 0.2s',
+          borderRadius: 1,
+          overflow: 'hidden',
+          '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 },
+        }}
       >
-        {article.imageUri && (
-          <CardMedia
-            component="img"
-            height={compact ? 200 : 320}
-            image={article.imageUri}
-            alt={article.title || 'Article'}
-            sx={{ objectFit: 'cover' }}
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        )}
-        <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-          <Typography
-            variant={compact ? 'h6' : 'h5'}
-            component="h2"
-            gutterBottom
-            sx={{ fontWeight: 600 }}
-          >
-            {article.title || 'Untitled Article'}
-          </Typography>
-          {(article.summary || article.fullStory) && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                mb: 2,
-                flexGrow: 1,
-                display: '-webkit-box',
-                WebkitLineClamp: compact ? 3 : 4,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
-            >
-              {article.summary || article.fullStory}
-            </Typography>
-          )}
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 'auto' }}>
-            <Chip label={(article.lang || '').toUpperCase()} size="small" variant="outlined" />
-            {article.datetimePub && (
-              <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto', alignSelf: 'center' }}>
-                {new Date(article.datetimePub).toLocaleDateString()}
-              </Typography>
-            )}
-          </Box>
-        </CardContent>
-      </CardActionArea>
-    </Card>
-  );
+        <AdaptiveCardPreview cardJson={cardJson} hideLabel />
+      </Box>
+    );
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -222,77 +167,21 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
         </Tooltip>
       </Box>
 
-      {/* Hero: random article (changes after each load; use Shuffle to switch) */}
+      {/* Hero: random article (adaptive card) */}
       {hero && (
-      <Box sx={{ mb: 4 }}>
-        <Box
-          key={hero.documentId}
-          sx={{
-            borderRadius: 2,
-            overflow: 'hidden',
-            boxShadow: 3,
-            transition: 'transform 0.2s, box-shadow 0.2s',
-            '&:hover': { boxShadow: 6 },
-          }}
-        >
-          <CardActionArea onClick={() => onArticleClick(hero)} sx={{ display: 'block', textAlign: 'left' }}>
-            {hero.imageUri && (
-              <CardMedia
-                component="img"
-                height="420"
-                image={hero.imageUri}
-                alt={hero.title || 'Featured'}
-                sx={{ objectFit: 'cover', width: '100%' }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-            )}
-            <Box sx={{ p: { xs: 3, md: 5 }, bgcolor: 'background.paper' }}>
-              <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
-                {hero.title || 'Untitled Article'}
-              </Typography>
-              {(hero.summary || hero.fullStory) && (
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{
-                    mb: 2,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 4,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                  }}
-                >
-                  {hero.summary || hero.fullStory}
-                </Typography>
-              )}
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                <Chip label={(hero.lang || '').toUpperCase()} size="small" variant="outlined" />
-                {hero.datetimePub && (
-                  <Typography variant="body2" color="text.secondary">
-                    {new Date(hero.datetimePub).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-          </CardActionArea>
+        <Box sx={{ mb: 4 }} key={hero.documentId}>
+          <ArticleCard article={hero} />
         </Box>
-      </Box>
       )}
 
-      {/* Grid: rest of articles */}
+      {/* Grid: rest of articles (adaptive cards) */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
         {gridArticles.map((article) => (
           <Box
             key={article.documentId}
             sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' } }}
           >
-            <ArticleCard article={article} compact />
+            <ArticleCard article={article} />
           </Box>
         ))}
       </Box>
