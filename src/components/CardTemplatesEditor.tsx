@@ -4,7 +4,6 @@ import {
   Button,
   Paper,
   Typography,
-  TextField,
   Tabs,
   Tab,
   FormControl,
@@ -18,6 +17,7 @@ import {
 } from '@mui/material';
 import { Save, RestartAlt, ExpandMore } from '@mui/icons-material';
 import AdaptiveCardPreview from './AdaptiveCardPreview';
+import JsonEditor from './JsonEditor';
 import { fillAdaptiveCardTemplate, articleToArticleData, type CardTemplateKind, type ArticleDataForCard } from './adaptiveCardUtils';
 import { useCardTemplates } from '../context/CardTemplatesContext';
 import type { Article } from './types';
@@ -158,35 +158,17 @@ export default function CardTemplatesEditor({
           ))}
         </Tabs>
 
-        <TextField
-          fullWidth
-          multiline
-          minRows={16}
-          maxRows={28}
-          label="Adaptive Card JSON"
-          value={templateEditorValue}
-          onChange={(e) => onTemplateEditorChange(e.target.value)}
-          placeholder='{ "type": "AdaptiveCard", "version": "1.4", "body": [...] }'
-          sx={{ fontFamily: 'monospace', fontSize: '0.85rem', mb: 2 }}
-          error={(() => {
-            try {
-              JSON.parse(templateEditorValue || '{}');
-              return false;
-            } catch {
-              return true;
-            }
-          })()}
-          helperText={
-            (() => {
-              try {
-                JSON.parse(templateEditorValue || '{}');
-                return null;
-              } catch (e) {
-                return 'Invalid JSON';
-              }
-            })() ?? undefined
-          }
-        />
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+            Adaptive Card JSON (validated against Adaptive Cards schema)
+          </Typography>
+          <JsonEditor
+            value={templateEditorValue}
+            onChange={onTemplateEditorChange}
+            adaptiveCardSchema={true}
+            height={420}
+          />
+        </Box>
 
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <Button variant="contained" startIcon={<Save />} onClick={handleSave}>
