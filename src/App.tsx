@@ -4,6 +4,7 @@ import ContentManager from './components/ContentManager';
 import Newsfeed from './components/Newsfeed';
 import ArticleDetail from './components/ArticleDetail';
 import { Article } from './components/types';
+import { CardTemplatesProvider } from './context/CardTemplatesContext';
 import './App.css';
 
 interface ContentMessage {
@@ -95,20 +96,23 @@ function App() {
   // If an article is selected, show the detail view
   if (selectedArticle) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Demo CMS Head
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <ArticleDetail article={selectedArticle} onBack={handleBackToNewsfeed} />
-      </Box>
+      <CardTemplatesProvider>
+        <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+          <AppBar position="static">
+            <Toolbar>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                Demo CMS Head
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          <ArticleDetail article={selectedArticle} onBack={handleBackToNewsfeed} />
+        </Box>
+      </CardTemplatesProvider>
     );
   }
 
   return (
+    <CardTemplatesProvider>
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="static">
         <Toolbar>
@@ -186,6 +190,7 @@ function App() {
         )}
       </Box>
     </Box>
+    </CardTemplatesProvider>
   );
 }
 

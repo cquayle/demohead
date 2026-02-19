@@ -5,7 +5,8 @@ import { Box, Button, Container, Typography, CircularProgress, Alert, IconButton
 import { Shuffle } from '@mui/icons-material';
 import { Article, sortArticlesByLatestFirst } from './types';
 import AdaptiveCardPreview from './AdaptiveCardPreview';
-import { fillAdaptiveCardTemplate, articleToArticleData, NEWSFEED_CARD_TEMPLATE } from './adaptiveCardUtils';
+import { fillAdaptiveCardTemplate, articleToArticleData } from './adaptiveCardUtils';
+import { useCardTemplates } from '../context/CardTemplatesContext';
 
 function pickRandomHero(articles: Article[]): Article | null {
   if (articles.length === 0) return null;
@@ -27,6 +28,10 @@ interface PageInfo {
 }
 
 export default function Newsfeed({ onArticleClick, liveArticles = [] }: NewsfeedProps) {
+  const { getTemplate } = useCardTemplates();
+  const heroTemplate = getTemplate('newsfeedHero');
+  const gridTemplate = getTemplate('newsfeedArticle');
+
   const [apiArticles, setApiArticles] = useState<Article[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -133,10 +138,10 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
     );
   }
 
-  const ArticleCard = ({ article }: { article: Article }) => {
+  const ArticleCard = ({ article, template }: { article: Article; template: string }) => {
     const cardJson = useMemo(
-      () => fillAdaptiveCardTemplate(NEWSFEED_CARD_TEMPLATE, articleToArticleData(article)),
-      [article]
+      () => fillAdaptiveCardTemplate(template, articleToArticleData(article)),
+      [article, template]
     );
     return (
       <Box
@@ -170,7 +175,7 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
       {/* Hero: random article (adaptive card) */}
       {hero && (
         <Box sx={{ mb: 4 }} key={hero.documentId}>
-          <ArticleCard article={hero} />
+          <ArticleCard article={hero} template={heroTemplate} />
         </Box>
       )}
 
@@ -181,7 +186,7 @@ export default function Newsfeed({ onArticleClick, liveArticles = [] }: Newsfeed
             key={article.documentId}
             sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' } }}
           >
-            <ArticleCard article={article} />
+            <ArticleCard article={article} template={gridTemplate} />
           </Box>
         ))}
       </Box>

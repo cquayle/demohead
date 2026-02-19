@@ -2,7 +2,8 @@ import type { Article } from './types';
 
 /**
  * Default Adaptive Card template for article preview / Power Automate.
- * Placeholders: {{title}}, {{summary}}, {{imageUri}}, {{articleId}}, {{datetimePub}}, {{lang}}, {{uri}}, {{fullStory}}
+ * Placeholders: ${title}, ${summary}, ${imageUri}, ${articleId}, ${datetimePub}, ${lang}, ${uri}, ${fullStory};
+ * computed: ${summaryVisible}, ${imageUriVisible} (true/false for optional blocks).
  */
 export const DEFAULT_ADAPTIVE_CARD_TEMPLATE = `{
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
@@ -11,30 +12,30 @@ export const DEFAULT_ADAPTIVE_CARD_TEMPLATE = `{
   "body": [
     {
       "type": "TextBlock",
-      "text": "{{title}}",
+      "text": "\${title}",
       "weight": "bolder",
       "size": "large",
       "wrap": true
     },
     {
       "type": "TextBlock",
-      "text": "{{summary}}",
+      "text": "\${summary}",
       "wrap": true,
-      "isVisible": "{{#summary}}true{{/summary}}{{^summary}}false{{/summary}}"
+      "isVisible": "\${summaryVisible}"
     },
     {
       "type": "Image",
-      "url": "{{imageUri}}",
-      "altText": "{{title}}",
+      "url": "\${imageUri}",
+      "altText": "\${title}",
       "size": "large",
-      "isVisible": "{{#imageUri}}true{{/imageUri}}{{^imageUri}}false{{/imageUri}}"
+      "isVisible": "\${imageUriVisible}"
     },
     {
       "type": "FactSet",
       "facts": [
-        { "title": "Article ID", "value": "{{articleId}}" },
-        { "title": "Language", "value": "{{lang}}" },
-        { "title": "Published", "value": "{{datetimePub}}" }
+        { "title": "Article ID", "value": "\${articleId}" },
+        { "title": "Language", "value": "\${lang}" },
+        { "title": "Published", "value": "\${datetimePub}" }
       ]
     }
   ],
@@ -42,12 +43,12 @@ export const DEFAULT_ADAPTIVE_CARD_TEMPLATE = `{
     {
       "type": "Action.OpenUrl",
       "title": "View article",
-      "url": "{{uri}}"
+      "url": "\${uri}"
     }
   ]
 }`;
 
-/** Simpler template that uses only {{...}} placeholders (no Mustache visibility). */
+/** Simpler template that uses only ${...} placeholders (no Mustache visibility). */
 export const SIMPLE_ADAPTIVE_CARD_TEMPLATE = `{
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "type": "AdaptiveCard",
@@ -55,28 +56,28 @@ export const SIMPLE_ADAPTIVE_CARD_TEMPLATE = `{
   "body": [
     {
       "type": "TextBlock",
-      "text": "{{title}}",
+      "text": "\${title}",
       "weight": "bolder",
       "size": "large",
       "wrap": true
     },
     {
       "type": "TextBlock",
-      "text": "{{summary}}",
+      "text": "\${summary}",
       "wrap": true
     },
     {
       "type": "Image",
-      "url": "{{imageUri}}",
+      "url": "\${imageUri}",
       "altText": "Article image",
       "size": "large"
     },
     {
       "type": "FactSet",
       "facts": [
-        { "title": "Article ID", "value": "{{articleId}}" },
-        { "title": "Language", "value": "{{lang}}" },
-        { "title": "Published", "value": "{{datetimePub}}" }
+        { "title": "Article ID", "value": "\${articleId}" },
+        { "title": "Language", "value": "\${lang}" },
+        { "title": "Published", "value": "\${datetimePub}" }
       ]
     }
   ],
@@ -84,7 +85,51 @@ export const SIMPLE_ADAPTIVE_CARD_TEMPLATE = `{
     {
       "type": "Action.OpenUrl",
       "title": "View article",
-      "url": "{{uri}}"
+      "url": "\${uri}"
+    }
+  ]
+}`;
+
+/** Template kinds used by the app (newsfeed hero, newsfeed grid item, full article detail). */
+export type CardTemplateKind = 'newsfeedHero' | 'newsfeedArticle' | 'fullArticle';
+
+const STORAGE_KEY_PREFIX = 'adaptiveCardTemplate_';
+const STORAGE_KEYS: Record<CardTemplateKind, string> = {
+  newsfeedHero: `${STORAGE_KEY_PREFIX}newsfeedHero`,
+  newsfeedArticle: `${STORAGE_KEY_PREFIX}newsfeedArticle`,
+  fullArticle: `${STORAGE_KEY_PREFIX}fullArticle`,
+};
+
+/** Default template for newsfeed hero (featured article). Same as newsfeed article by default; customize for larger hero. */
+export const NEWSFEED_HERO_CARD_TEMPLATE = `{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.4",
+  "body": [
+    {
+      "type": "Image",
+      "url": "\${imageUri}",
+      "altText": "\${title}",
+      "size": "large"
+    },
+    {
+      "type": "TextBlock",
+      "text": "\${title}",
+      "weight": "bolder",
+      "size": "extraLarge",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "\${summary}",
+      "wrap": true
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        { "title": "Language", "value": "\${lang}" },
+        { "title": "Published", "value": "\${datetimePub}" }
+      ]
     }
   ]
 }`;
@@ -97,27 +142,27 @@ export const NEWSFEED_CARD_TEMPLATE = `{
   "body": [
     {
       "type": "Image",
-      "url": "{{imageUri}}",
-      "altText": "{{title}}",
+      "url": "\${imageUri}",
+      "altText": "\${title}",
       "size": "large"
     },
     {
       "type": "TextBlock",
-      "text": "{{title}}",
+      "text": "\${title}",
       "weight": "bolder",
       "size": "large",
       "wrap": true
     },
     {
       "type": "TextBlock",
-      "text": "{{summary}}",
+      "text": "\${summary}",
       "wrap": true
     },
     {
       "type": "FactSet",
       "facts": [
-        { "title": "Language", "value": "{{lang}}" },
-        { "title": "Published", "value": "{{datetimePub}}" }
+        { "title": "Language", "value": "\${lang}" },
+        { "title": "Published", "value": "\${datetimePub}" }
       ]
     }
   ]
@@ -131,13 +176,13 @@ export const DETAIL_CARD_TEMPLATE = `{
   "body": [
     {
       "type": "Image",
-      "url": "{{imageUri}}",
-      "altText": "{{title}}",
+      "url": "\${imageUri}",
+      "altText": "\${title}",
       "size": "large"
     },
     {
       "type": "TextBlock",
-      "text": "{{title}}",
+      "text": "\${title}",
       "weight": "bolder",
       "size": "extraLarge",
       "wrap": true
@@ -145,19 +190,19 @@ export const DETAIL_CARD_TEMPLATE = `{
     {
       "type": "FactSet",
       "facts": [
-        { "title": "Language", "value": "{{lang}}" },
-        { "title": "Published", "value": "{{datetimePub}}" }
+        { "title": "Language", "value": "\${lang}" },
+        { "title": "Published", "value": "\${datetimePub}" }
       ]
     },
     {
       "type": "TextBlock",
-      "text": "{{summary}}",
+      "text": "\${summary}",
       "wrap": true,
       "isSubtle": true
     },
     {
       "type": "TextBlock",
-      "text": "{{fullStory}}",
+      "text": "\${fullStory}",
       "wrap": true
     }
   ],
@@ -165,7 +210,7 @@ export const DETAIL_CARD_TEMPLATE = `{
     {
       "type": "Action.OpenUrl",
       "title": "View Original Article",
-      "url": "{{uri}}"
+      "url": "\${uri}"
     }
   ]
 }`;
@@ -195,8 +240,9 @@ function escapeForJsonString(s: string): string {
 }
 
 /**
- * Replace {{key}} placeholders in template with article data.
+ * Replace ${key} placeholders in template with article data.
  * Keys: title, summary, fullStory, imageUri, articleId, lang, datetimePub, uri, sourceUri.
+ * Computed: ${summaryVisible}, ${imageUriVisible} → true/false for optional blocks.
  * Empty imageUri is replaced with a 1x1 transparent pixel so the card still renders.
  * String values are escaped so quotes/newlines in content do not break the JSON.
  */
@@ -223,9 +269,12 @@ export function fillAdaptiveCardTemplate(
   for (const key of keys) {
     const raw = dataWithPlaceholders[key] ?? '';
     const value = escapeForJsonString(String(raw));
-    const placeholder = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+    const placeholder = new RegExp(`\\$\\{${key}\\}`, 'g');
     out = out.replace(placeholder, value);
   }
+  // Computed visibility placeholders (for optional summary/image blocks)
+  out = out.replace(/\$\{summaryVisible\}/g, (data.summary ?? '') ? 'true' : 'false');
+  out = out.replace(/\$\{imageUriVisible\}/g, (data.imageUri ?? '') ? 'true' : 'false');
   return out;
 }
 
@@ -284,4 +333,55 @@ export function articleToArticleData(article: Article): ArticleDataForCard {
     uri: article.uri || '#',
     sourceUri: article.sourceUri || '',
   };
+}
+
+/** Return the default template for a given kind (for editor "Reset to default"). */
+export function getDefaultCardTemplate(kind: CardTemplateKind): string {
+  switch (kind) {
+    case 'newsfeedHero':
+      return NEWSFEED_HERO_CARD_TEMPLATE;
+    case 'newsfeedArticle':
+      return NEWSFEED_CARD_TEMPLATE;
+    case 'fullArticle':
+      return DETAIL_CARD_TEMPLATE;
+    default:
+      return NEWSFEED_CARD_TEMPLATE;
+  }
+}
+
+/**
+ * Migrate old Mustache-style placeholders to ${...} format.
+ * Converts {{key}} → ${key} and Mustache visibility conditionals → ${summaryVisible} / ${imageUriVisible}.
+ */
+function migrateMustacheToDollarBraces(template: string): string {
+  if (!template.includes('{{')) return template;
+  let out = template;
+  // Mustache conditionals used for isVisible
+  out = out.replace(/\{\{#summary\}\}true\{\{\/summary\}\}\{\{\^summary\}\}false\{\{\/summary\}\}/g, '${summaryVisible}');
+  out = out.replace(/\{\{#imageUri\}\}true\{\{\/imageUri\}\}\{\{\^imageUri\}\}false\{\{\/imageUri\}\}/g, '${imageUriVisible}');
+  // Simple {{key}} → ${key}
+  out = out.replace(/\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}/g, '${$1}');
+  return out;
+}
+
+/** Read stored template for a kind from localStorage; falls back to default. Migrates old {{...}} placeholders to ${...}. */
+export function getStoredCardTemplateByKind(kind: CardTemplateKind): string {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS[kind]);
+    if (stored) {
+      const migrated = migrateMustacheToDollarBraces(stored);
+      if (migrated !== stored) {
+        localStorage.setItem(STORAGE_KEYS[kind], migrated);
+      }
+      return migrated;
+    }
+  } catch {}
+  return getDefaultCardTemplate(kind);
+}
+
+/** Persist template for a kind to localStorage. */
+export function setStoredCardTemplateByKind(kind: CardTemplateKind, template: string): void {
+  try {
+    localStorage.setItem(STORAGE_KEYS[kind], template);
+  } catch {}
 }

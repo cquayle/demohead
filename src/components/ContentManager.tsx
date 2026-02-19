@@ -32,7 +32,10 @@ import {
   fillAdaptiveCardTemplate,
   formDataToArticleData,
   SIMPLE_ADAPTIVE_CARD_TEMPLATE,
+  type CardTemplateKind,
 } from './adaptiveCardUtils';
+import { useCardTemplates } from '../context/CardTemplatesContext';
+import CardTemplatesEditor from './CardTemplatesEditor';
 
 const STORAGE_WEBHOOK_URL = 'powerAutomateWebhookUrl';
 const STORAGE_CARD_TEMPLATE = 'adaptiveCardTemplateJson';
@@ -77,7 +80,8 @@ function setStoredCardTemplate(template: string) {
 }
 
 export default function ContentManager() {
-  const [selectedTab, setSelectedTab] = useState<'articles' | 'create'>('articles');
+  const { getTemplate, setTemplate, resetToDefault } = useCardTemplates();
+  const [selectedTab, setSelectedTab] = useState<'articles' | 'create' | 'templates'>('articles');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [formData, setFormData] = useState(initialForm);
   const [webhookUrl, setWebhookUrl] = useState(getStoredWebhookUrl);
@@ -85,6 +89,10 @@ export default function ContentManager() {
   const [showWebhookSettings, setShowWebhookSettings] = useState(false);
   const [sendingWebhook, setSendingWebhook] = useState(false);
   const [webhookError, setWebhookError] = useState<string | null>(null);
+
+  // Card template editor state (for "Card templates" tab)
+  const [selectedTemplateKind, setSelectedTemplateKind] = useState<CardTemplateKind>('newsfeedHero');
+  const [templateEditorValue, setTemplateEditorValue] = useState('');
 
   const { data: articlesData, loading: articlesLoading, error: articlesError, refetch: refetchArticles } = useQuery<{ articles: Article[] }>(GET_ARTICLES);
   const [createArticle, { loading: creating }] = useMutation(CREATE_ARTICLE, {
@@ -227,10 +235,14 @@ export default function ContentManager() {
               setSelectedArticle(null);
               setFormData(initialForm);
             }
+            if (newValue === 'templates') {
+              setTemplateEditorValue(getTemplate(selectedTemplateKind));
+            }
           }}
         >
           <Tab label={`Articles (${articles.length})`} value="articles" />
           <Tab label={selectedArticle ? 'Edit Article' : 'Create Article'} value="create" />
+          <Tab label="Card templates" value="templates" />
         </Tabs>
       </Box>
 
@@ -450,6 +462,24 @@ export default function ContentManager() {
         </Box>
       )}
 
+      {selectedTab === 'templates' && (
+        <CardTemplatesEditor
+          selectedTemplateKind={selectedTemplateKind}
+          onTemplateKindChange={(kind) => {
+            setSelectedTemplateKind(kind);
+            setTemplateEditorValue(getTemplate(kind));
+          }}
+          templateEditorValue={templateEditorValue}
+          onTemplateEditorChange={setTemplateEditorValue}
+          onSave={() => setTemplate(selectedTemplateKind, templateEditorValue)}
+          onReset={() => {
+            resetToDefault(selectedTemplateKind);
+            setTemplateEditorValue(getTemplate(selectedTemplateKind));
+          }}
+          articles={articles}
+        />
+      )}
+
       {/* Webhook & adaptive card template settings dialog */}
       {showWebhookSettings && (
         <Paper
@@ -471,7 +501,7 @@ export default function ContentManager() {
             Power Automate webhook & adaptive card template
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Configure the webhook URL and the adaptive card JSON. Use placeholders: {'{{title}}'}, {'{{summary}}'}, {'{{imageUri}}'}, {'{{articleId}}'}, {'{{datetimePub}}'}, {'{{lang}}'}, {'{{uri}}'}, {'{{fullStory}}'}.
+            Configure the webhook URL and the adaptive card JSON. Use placeholders: {'${title}'}, {'${summary}'}, {'${imageUri}'}, {'${articleId}'}, {'${datetimePub}'}, {'${lang}'}, {'${uri}'}, {'${fullStory}'}.
           </Typography>
           <TextField
             fullWidth

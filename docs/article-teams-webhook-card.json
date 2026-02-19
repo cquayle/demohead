@@ -77,7 +77,7 @@
         {
           "type": "Action.OpenUrl",
           "title": "View Article",
-          "url": "{{root.uri}}"
+          "url": "${root.uri}"
         }
       ]
     }

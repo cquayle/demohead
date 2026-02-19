@@ -3,7 +3,8 @@ import { Box, Container, Button } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { Article } from './types';
 import AdaptiveCardPreview from './AdaptiveCardPreview';
-import { fillAdaptiveCardTemplate, articleToArticleData, DETAIL_CARD_TEMPLATE } from './adaptiveCardUtils';
+import { fillAdaptiveCardTemplate, articleToArticleData } from './adaptiveCardUtils';
+import { useCardTemplates } from '../context/CardTemplatesContext';
 
 interface ArticleDetailProps {
   article: Article;
@@ -13,9 +14,11 @@ interface ArticleDetailProps {
 }
 
 export default function ArticleDetail({ article, onBack, hideBackButton }: ArticleDetailProps) {
+  const { getTemplate } = useCardTemplates();
+  const fullArticleTemplate = getTemplate('fullArticle');
   const cardJson = useMemo(
-    () => fillAdaptiveCardTemplate(DETAIL_CARD_TEMPLATE, articleToArticleData(article)),
-    [article]
+    () => fillAdaptiveCardTemplate(fullArticleTemplate, articleToArticleData(article)),
+    [article, fullArticleTemplate]
   );
 
   return (
