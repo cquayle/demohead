@@ -27,10 +27,9 @@ import { Edit, Delete, Send, Settings } from '@mui/icons-material';
 import { GET_ARTICLES } from '../graphql/queries';
 import { CREATE_ARTICLE, UPDATE_ARTICLE, DELETE_ARTICLE } from '../graphql/mutations';
 import { Article, sortArticlesByLatestFirst } from './types';
-import AdaptiveCardPreview from './AdaptiveCardPreview';
 import {
-  fillAdaptiveCardTemplate,
   formDataToArticleData,
+  fillAdaptiveCardTemplate,
   SIMPLE_ADAPTIVE_CARD_TEMPLATE,
   type CardTemplateKind,
 } from './adaptiveCardUtils';
@@ -112,14 +111,18 @@ export default function ContentManager() {
   });
   const [deleteArticle] = useMutation(DELETE_ARTICLE, { onCompleted: () => refetchArticles() });
 
-  /** Filled adaptive card JSON for current form (for preview and send). */
-  const filledCardJson = useMemo(() => {
-    const data = formDataToArticleData({
+  /** Article data from form for preview. */
+  const formArticleData = useMemo(() => {
+    return formDataToArticleData({
       ...formData,
       datetimePub: selectedArticle?.datetimePub,
     });
-    return fillAdaptiveCardTemplate(cardTemplate, data);
-  }, [cardTemplate, formData, selectedArticle?.datetimePub]);
+  }, [formData, selectedArticle?.datetimePub]);
+
+  /** Filled adaptive card JSON for current form (for send to Power Automate). */
+  const filledCardJson = useMemo(() => {
+    return fillAdaptiveCardTemplate(cardTemplate, formArticleData);
+  }, [cardTemplate, formArticleData]);
 
   const handleCreate = async () => {
     try {
@@ -323,7 +326,7 @@ export default function ContentManager() {
       {selectedTab === 'create' && (
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 3 }}>
           {/* Form column */}
-          <Paper sx={{ p: 4, flex: { xs: '1 1 auto', lg: '1 1 55%' }, minWidth: 0 }}>
+          <Paper sx={{ p: 4, flex: { xs: '1 1 auto', lg: '1 1 50%' }, minWidth: 0 }}>
             <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
               {selectedArticle ? 'Edit Article' : 'Create New Article'}
             </Typography>
@@ -438,26 +441,19 @@ export default function ContentManager() {
             </Box>
           </Paper>
 
-          {/* Preview pane: adaptive card only */}
-          <Paper sx={{ p: 2, flex: { xs: '1 1 auto', lg: '1 1 45%' }, minWidth: 0, maxHeight: { lg: '85vh' }, display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-              Preview (adaptive card)
-            </Typography>
-            <Box sx={{ flex: 1, overflow: 'auto' }}>
-              <AdaptiveCardPreview cardJson={filledCardJson} />
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
-                JSON (with placeholders filled)
-              </Typography>
-              <TextField
-                fullWidth
-                multiline
-                minRows={8}
-                maxRows={20}
-                value={filledCardJson}
-                InputProps={{ readOnly: true }}
-                sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
-              />
-            </Box>
+          {/* Preview pane: all template kinds */}
+          <Paper sx={{ p: 3, flex: { xs: '1 1 auto', lg: '1 1 50%' }, minWidth: 0 }}>
+            <CardTemplatesEditor
+              selectedTemplateKind={selectedTemplateKind}
+              onTemplateKindChange={setSelectedTemplateKind}
+              templateEditorValue={templateEditorValue}
+              onTemplateEditorChange={() => {}}
+              onSave={() => {}}
+              onReset={() => {}}
+              articles={articles}
+              previewArticleData={formArticleData}
+              previewOnly={true}
+            />
           </Paper>
         </Box>
       )}

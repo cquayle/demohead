@@ -12,10 +12,14 @@ import {
   Select,
   MenuItem,
   Alert,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
-import { Save, RestartAlt } from '@mui/icons-material';
+import { Save, RestartAlt, ExpandMore } from '@mui/icons-material';
 import AdaptiveCardPreview from './AdaptiveCardPreview';
-import { fillAdaptiveCardTemplate, articleToArticleData, type CardTemplateKind } from './adaptiveCardUtils';
+import { fillAdaptiveCardTemplate, articleToArticleData, type CardTemplateKind, type ArticleDataForCard } from './adaptiveCardUtils';
+import { useCardTemplates } from '../context/CardTemplatesContext';
 import type { Article } from './types';
 
 const TEMPLATE_KIND_LABELS: Record<CardTemplateKind, string> = {
@@ -49,6 +53,10 @@ interface CardTemplatesEditorProps {
   onSave: () => void;
   onReset: () => void;
   articles: Article[];
+  /** Optional: Override preview data (e.g. from form). When set, shows all template kinds. */
+  previewArticleData?: Partial<ArticleDataForCard>;
+  /** When true, hide the editor and show all template previews. */
+  previewOnly?: boolean;
 }
 
 export default function CardTemplatesEditor({
@@ -59,16 +67,20 @@ export default function CardTemplatesEditor({
   onSave,
   onReset,
   articles,
+  previewArticleData,
+  previewOnly = false,
 }: CardTemplatesEditorProps) {
   const [previewWith, setPreviewWith] = useState<string>('sample');
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const { getTemplate } = useCardTemplates();
 
   const previewData = useMemo(() => {
+    if (previewArticleData) return previewArticleData as ArticleDataForCard;
     if (previewWith === 'sample') return SAMPLE_ARTICLE_DATA;
     const article = articles.find((a) => a.documentId === previewWith);
     if (!article) return SAMPLE_ARTICLE_DATA;
     return articleToArticleData(article);
-  }, [previewWith, articles]);
+  }, [previewWith, articles, previewArticleData]);
 
   const filledPreviewJson = useMemo(() => {
     try {
@@ -78,11 +90,51 @@ export default function CardTemplatesEditor({
     }
   }, [templateEditorValue, previewData]);
 
+  // Generate previews for all template kinds when previewOnly is true
+  const allTemplatePreviews = useMemo(() => {
+    if (!previewOnly) return null;
+    const kinds: CardTemplateKind[] = ['newsfeedHero', 'newsfeedArticle', 'fullArticle'];
+    return kinds.map((kind) => {
+      const template = getTemplate(kind);
+      try {
+        const filled = fillAdaptiveCardTemplate(template, previewData);
+        return { kind, filled };
+      } catch {
+        return { kind, filled: '' };
+      }
+    });
+  }, [previewOnly, previewData, getTemplate]);
+
   const handleSave = () => {
     onSave();
     setSaveMessage('Templates saved. They will be used in the Newsfeed and Article detail views.');
     setTimeout(() => setSaveMessage(null), 3000);
   };
+
+  // Preview-only mode: show all template kinds
+  if (previewOnly && allTemplatePreviews) {
+    return (
+      <Box>
+        <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+          Preview in all template kinds
+        </Typography>
+        {allTemplatePreviews.map(({ kind, filled }) => (
+          <Accordion key={kind} defaultExpanded={kind === 'newsfeedArticle'}>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography variant="subtitle1" fontWeight={600}>
+                {TEMPLATE_KIND_LABELS[kind]}
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box sx={{ mb: 2 }}>
+                <AdaptiveCardPreview cardJson={filled} hideLabel />
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+        ))}
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 3 }}>
@@ -156,21 +208,23 @@ export default function CardTemplatesEditor({
         <Typography variant="h6" gutterBottom>
           Preview
         </Typography>
-        <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-          <InputLabel>Preview with</InputLabel>
-          <Select
-            value={previewWith}
-            label="Preview with"
-            onChange={(e) => setPreviewWith(e.target.value)}
-          >
-            <MenuItem value="sample">Sample data</MenuItem>
-            {articles.map((a) => (
-              <MenuItem key={a.documentId} value={a.documentId}>
-                {a.title || a.articleId || a.documentId}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {!previewArticleData && (
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel>Preview with</InputLabel>
+            <Select
+              value={previewWith}
+              label="Preview with"
+              onChange={(e) => setPreviewWith(e.target.value)}
+            >
+              <MenuItem value="sample">Sample data</MenuItem>
+              {articles.map((a) => (
+                <MenuItem key={a.documentId} value={a.documentId}>
+                  {a.title || a.articleId || a.documentId}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
         <Box sx={{ flex: 1, overflow: 'auto' }}>
           <AdaptiveCardPreview cardJson={filledPreviewJson} hideLabel />
         </Box>
