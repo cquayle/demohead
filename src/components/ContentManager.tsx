@@ -30,7 +30,7 @@ import { Article, sortArticlesByLatestFirst } from './types';
 import {
   formDataToArticleData,
   fillAdaptiveCardTemplate,
-  SIMPLE_ADAPTIVE_CARD_TEMPLATE,
+  NEWSFEED_CARD_TEMPLATE,
   type CardTemplateKind,
 } from './adaptiveCardUtils';
 import { useCardTemplates } from '../context/CardTemplatesContext';
@@ -63,7 +63,7 @@ function getStoredCardTemplate(): string {
     const stored = localStorage.getItem(STORAGE_CARD_TEMPLATE);
     if (stored) return stored;
   } catch {}
-  return SIMPLE_ADAPTIVE_CARD_TEMPLATE;
+  return NEWSFEED_CARD_TEMPLATE;
 }
 
 function setStoredWebhookUrl(url: string) {

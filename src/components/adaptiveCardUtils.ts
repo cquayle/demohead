@@ -1,94 +1,5 @@
 import type { Article } from './types';
 
-/**
- * Default Adaptive Card template for article preview / Power Automate.
- * Placeholders: ${title}, ${summary}, ${imageUri}, ${articleId}, ${datetimePub}, ${lang}, ${uri}, ${fullStory};
- * computed: ${summaryVisible}, ${imageUriVisible} (true/false for optional blocks).
- */
-export const DEFAULT_ADAPTIVE_CARD_TEMPLATE = `{
-  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-  "type": "AdaptiveCard",
-  "version": "1.4",
-  "body": [
-    {
-      "type": "TextBlock",
-      "text": "\${title}",
-      "weight": "bolder",
-      "size": "large",
-      "wrap": true
-    },
-    {
-      "type": "TextBlock",
-      "text": "\${summary}",
-      "wrap": true,
-      "isVisible": "\${summaryVisible}"
-    },
-    {
-      "type": "Image",
-      "url": "\${imageUri}",
-      "altText": "\${title}",
-      "size": "large",
-      "isVisible": "\${imageUriVisible}"
-    },
-    {
-      "type": "FactSet",
-      "facts": [
-        { "title": "Article ID", "value": "\${articleId}" },
-        { "title": "Language", "value": "\${lang}" },
-        { "title": "Published", "value": "\${datetimePub}" }
-      ]
-    }
-  ],
-  "actions": [
-    {
-      "type": "Action.OpenUrl",
-      "title": "View article",
-      "url": "\${uri}"
-    }
-  ]
-}`;
-
-/** Simpler template that uses only ${...} placeholders (no Mustache visibility). */
-export const SIMPLE_ADAPTIVE_CARD_TEMPLATE = `{
-  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-  "type": "AdaptiveCard",
-  "version": "1.4",
-  "body": [
-    {
-      "type": "TextBlock",
-      "text": "\${title}",
-      "weight": "bolder",
-      "size": "large",
-      "wrap": true
-    },
-    {
-      "type": "TextBlock",
-      "text": "\${summary}",
-      "wrap": true
-    },
-    {
-      "type": "Image",
-      "url": "\${imageUri}",
-      "altText": "Article image",
-      "size": "large"
-    },
-    {
-      "type": "FactSet",
-      "facts": [
-        { "title": "Article ID", "value": "\${articleId}" },
-        { "title": "Language", "value": "\${lang}" },
-        { "title": "Published", "value": "\${datetimePub}" }
-      ]
-    }
-  ],
-  "actions": [
-    {
-      "type": "Action.OpenUrl",
-      "title": "View article",
-      "url": "\${uri}"
-    }
-  ]
-}`;
 
 /** Template kinds used by the app (newsfeed hero, newsfeed grid item, full article detail). */
 export type CardTemplateKind = 'newsfeedHero' | 'newsfeedArticle' | 'fullArticle';
@@ -104,13 +15,19 @@ const STORAGE_KEYS: Record<CardTemplateKind, string> = {
 export const NEWSFEED_HERO_CARD_TEMPLATE = `{
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "type": "AdaptiveCard",
-  "version": "1.4",
+  "version": "1.6",
   "body": [
-    {
-      "type": "Image",
-      "url": "\${imageUri}",
-      "altText": "\${title}",
-      "size": "large"
+     {
+      "type": "Container",
+      "roundedCorners": true,
+      "backgroundImage": {
+          "url": "\${imageUri}",
+          "horizontalAlignment": "Center",
+          "verticalAlignment": "Center"
+      },
+      "height": "stretch",
+      "minHeight": "300px",
+      "verticalContentAlignment": "Center"
     },
     {
       "type": "TextBlock",
@@ -138,13 +55,20 @@ export const NEWSFEED_HERO_CARD_TEMPLATE = `{
 export const NEWSFEED_CARD_TEMPLATE = `{
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "type": "AdaptiveCard",
-  "version": "1.4",
+  "version": "1.6",
   "body": [
-    {
-      "type": "Image",
-      "url": "\${imageUri}",
-      "altText": "\${title}",
-      "size": "large"
+   {
+      "type": "Container",
+      "roundedCorners": true,
+      "backgroundImage": {
+          "url": "\${imageUri}",
+          "horizontalAlignment": "Center",
+          "verticalAlignment": "Center"
+      },
+      "width": "stretch",
+      "height": "stretch",
+      "minHeight": "200px",
+      "verticalContentAlignment": "Center"
     },
     {
       "type": "TextBlock",
@@ -172,13 +96,19 @@ export const NEWSFEED_CARD_TEMPLATE = `{
 export const DETAIL_CARD_TEMPLATE = `{
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "type": "AdaptiveCard",
-  "version": "1.4",
+  "version": "1.6",
   "body": [
     {
-      "type": "Image",
-      "url": "\${imageUri}",
-      "altText": "\${title}",
-      "size": "large"
+      "type": "Container",
+      "roundedCorners": true,
+      "backgroundImage": {
+          "url": "\${imageUri}",
+          "horizontalAlignment": "Center",
+          "verticalAlignment": "Center"
+      },
+      "height": "stretch",
+      "maxHeight": "200px",
+      "verticalContentAlignment": "Center"
     },
     {
       "type": "TextBlock",
@@ -291,15 +221,15 @@ export function formDataToArticleData(form: {
 }): ArticleDataForCard {
   const datetimePub = form.datetimePub
     ? new Date(form.datetimePub).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
     : new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   return {
     title: form.title || 'Untitled',
     summary: form.summary || '',
@@ -317,10 +247,10 @@ export function formDataToArticleData(form: {
 export function articleToArticleData(article: Article): ArticleDataForCard {
   const datetimePub = article.datetimePub
     ? new Date(article.datetimePub).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
     : '';
   return {
     title: article.title || 'Untitled',
@@ -375,7 +305,7 @@ export function getStoredCardTemplateByKind(kind: CardTemplateKind): string {
       }
       return migrated;
     }
-  } catch {}
+  } catch { }
   return getDefaultCardTemplate(kind);
 }
 
@@ -383,5 +313,5 @@ export function getStoredCardTemplateByKind(kind: CardTemplateKind): string {
 export function setStoredCardTemplateByKind(kind: CardTemplateKind, template: string): void {
   try {
     localStorage.setItem(STORAGE_KEYS[kind], template);
-  } catch {}
+  } catch { }
 }
