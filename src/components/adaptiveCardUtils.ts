@@ -107,7 +107,7 @@ export const DETAIL_CARD_TEMPLATE = `{
           "verticalAlignment": "Center"
       },
       "height": "stretch",
-      "maxHeight": "200px",
+      "minHeight": "250px",
       "verticalContentAlignment": "Center"
     },
     {
@@ -140,7 +140,7 @@ export const DETAIL_CARD_TEMPLATE = `{
     {
       "type": "Action.OpenUrl",
       "title": "View Original Article",
-      "url": "\${uri}"
+      "url": "\${sourceUri}"
     }
   ]
 }`;

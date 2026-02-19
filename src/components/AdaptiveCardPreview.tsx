@@ -46,6 +46,11 @@ export default function AdaptiveCardPreview({ cardJson, hideLabel }: AdaptiveCar
       card.hostConfig = new AdaptiveCards.HostConfig({
         fontFamily: 'Segoe UI, Helvetica Neue, sans-serif',
       });
+      card.onExecuteAction = (action: AdaptiveCards.Action) => {
+        if (action instanceof AdaptiveCards.OpenUrlAction && action.url) {
+          window.open(action.url, '_blank', 'noopener,noreferrer');
+        }
+      };
       card.parse(cardPayload);
       card.render(el);
     } catch (err) {
